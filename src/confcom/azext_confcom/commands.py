@@ -11,5 +11,8 @@ def load_command_table(self, _):
         g.custom_command("acifragmentgen", "acifragmentgen_confcom")
         g.custom_command("katapolicygen", "katapolicygen_confcom")
 
+    with self.command_group("confcom parse aci") as g:
+        g.custom_command("arm", "parse_aci_arm", is_preview=True)
+
     with self.command_group("confcom"):
         pass

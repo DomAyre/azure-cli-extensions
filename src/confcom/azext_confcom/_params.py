@@ -42,6 +42,58 @@ def load_arguments(self, _):
         c.argument("tags", tags_type)
         c.argument("confcom_name", confcom_name_type, options_list=["--name", "-n"])
 
+    with self.argument_context("confcom parse aci arm") as c:
+        c.positional(
+            "arm_template_path",
+            help="Path to the ARM template file to parse.",
+        )
+        c.argument(
+            "arm_template_parameters_path",
+            options_list=("--parameters", "-p"),
+            required=False,
+            help="ARM template parameters",
+            # validator=validate_params_file
+        )
+        c.argument(
+            "exclude_default_fragments",
+            options_list=("--exclude-default-fragments", "-e"),
+            default=False,
+            action="store_true",
+            required=False,
+            help="Exclude default fragments in the generated policy",
+        )
+        c.argument(
+            "infrastructure_svn",
+            options_list=("--infrastructure-svn",),
+            required=False,
+            help="Minimum Allowed Software Version Number for Infrastructure Fragment",
+            validator=validate_infrastructure_svn,
+        )
+        c.argument(
+            "debug_mode",
+            options_list=("--debug-mode",),
+            default=False,
+            action="store_true",
+            required=False,
+            help="Debug mode will enable processes in a container group that are helpful for debugging",
+        )
+        c.argument(
+            "disable_stdio",
+            options_list=("--disable-stdio",),
+            default=False,
+            action="store_true",
+            required=False,
+            help="Disabling container stdio will disable the ability to see the output of the container in the terminal for Confidential ACI",
+        )
+        c.argument(
+            "approve_wildcards",
+            options_list=("--approve-wildcards", "-y"),
+            default=False,
+            action="store_true",
+            required=False,
+            help="Approving wildcards by default will get rid of the prompts during the wildcard environment variable use case and auto-approve the use of wildcards",
+        )
+
     with self.argument_context("confcom acipolicygen") as c:
         c.argument(
             "input_path",

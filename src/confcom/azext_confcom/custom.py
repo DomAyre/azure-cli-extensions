@@ -6,6 +6,7 @@
 import json
 import os
 import sys
+from typing import Optional
 
 from azext_confcom import oras_proxy, os_util, security_policy
 from azext_confcom.config import (
@@ -21,6 +22,7 @@ from azext_confcom.template_util import (
     extract_confidential_properties, get_image_name, inject_policy_into_template, inject_policy_into_yaml,
     pretty_print_func, print_existing_policy_from_arm_template,
     print_existing_policy_from_yaml, print_func, str_to_sha256)
+from azext_confcom.command.parse_aci_arm import parse_aci_arm as _parse_aci_arm
 from knack.log import get_logger
 from pkg_resources import parse_version
 
@@ -488,3 +490,24 @@ def get_fragment_output_type(outraw):
     if outraw:
         output_type = security_policy.OutputType.RAW
     return output_type
+
+# This should be *args, **kwargs to avoid having to touch this, however the az
+# extension frameworks then expects literal args and kwargs parameters.
+def parse_aci_arm(
+    arm_template_path: str,
+    arm_template_parameters_path: Optional[str],
+    debug_mode: bool,
+    exclude_default_fragments: bool,
+    infrastructure_svn: Optional[str],
+    disable_stdio: bool,
+    approve_wildcards: bool,
+) -> str:
+    return _parse_aci_arm(
+        arm_template_path,
+        arm_template_parameters_path,
+        debug_mode,
+        exclude_default_fragments,
+        infrastructure_svn,
+        disable_stdio,
+        approve_wildcards,
+    )
