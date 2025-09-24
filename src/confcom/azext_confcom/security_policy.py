@@ -154,7 +154,10 @@ class AciPolicy:  # pylint: disable=too-many-instance-attributes
         self._fragment_contents = fragment_contents
 
     def get_fragments(self) -> List[str]:
-        return self._fragments or []
+        return sorted(
+            self._fragments,
+            key=lambda x: x.get(config.POLICY_FIELD_CONTAINERS_ELEMENTS_REGO_FRAGMENTS_FEED)
+        ) or []
 
     def get_serialized_output(
         self,
