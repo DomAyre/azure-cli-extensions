@@ -115,9 +115,8 @@ class FragmentMountEnforcement(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
 
     def test_fragment_user_container_customized_mounts(self):
         image = next(
@@ -345,9 +344,8 @@ class FragmentGenerating(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
 
 
     def test_fragment_omit_id(self):
@@ -613,9 +611,8 @@ class FragmentSidecarValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
         with load_policy_from_json(cls.custom_json2) as aci_policy2:
             aci_policy2.populate_policy_content_for_all_images()
             cls.aci_policy2 = aci_policy2
@@ -785,9 +782,8 @@ class FragmentPolicySigning(unittest.TestCase):
             if item.returncode != 0:
                 raise Exception("Error creating certificate chain")
 
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
         with load_policy_from_json(cls.custom_json2) as aci_policy2:
             aci_policy2.populate_policy_content_for_all_images()
             cls.aci_policy2 = aci_policy2
@@ -935,9 +931,8 @@ class FragmentVirtualNode(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
 
     def test_fragment_vn2_env_vars(self):
         image = self.aci_policy.get_images()[0]

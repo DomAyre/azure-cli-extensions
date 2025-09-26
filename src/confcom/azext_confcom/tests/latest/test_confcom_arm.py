@@ -204,9 +204,8 @@ class PolicyGeneratingArm(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
 
         cls.aci_arm_policy = load_policy_from_arm_template_str(cls.custom_arm_json, "")[
             0
@@ -3566,9 +3565,8 @@ class PolicyGeneratingArmWildcardEnvs(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
 
         with patch('builtins.input', return_value='y'):
             cls.aci_arm_policy = load_policy_from_arm_template_str(cls.custom_arm_json, "")[

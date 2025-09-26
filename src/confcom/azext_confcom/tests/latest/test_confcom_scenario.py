@@ -62,9 +62,8 @@ class MountEnforcement(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
 
     def test_user_container_customized_mounts(self):
         image = next(
@@ -261,9 +260,8 @@ class PolicyGenerating(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
 
     def test_injected_sidecar_container_msi(self):
         image = self.aci_policy.get_images()[0]
@@ -461,9 +459,8 @@ class SidecarValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
         with load_policy_from_json(cls.custom_json2) as aci_policy2:
             aci_policy2.populate_policy_content_for_all_images()
             cls.aci_policy2 = aci_policy2
