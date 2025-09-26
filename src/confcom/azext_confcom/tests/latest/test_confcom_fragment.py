@@ -502,13 +502,13 @@ class FragmentPolicyGeneratingTarfile(unittest.TestCase):
                     out_tar.add(os.path.join(folder, "index.json"), "index.json")
                     out_tar.add(os.path.join(folder, "blobs"), "blobs", recursive=True)
 
-                with load_policy_from_json(self.custom_json) as aci_policy:
-                    aci_policy.populate_policy_content_for_all_images(
-                        tar_mapping=tar_mapping_file
-                    )
+                aci_policy = load_policy_from_json(self.custom_json)[0]
+                aci_policy.populate_policy_content_for_all_images(
+                    tar_mapping=tar_mapping_file
+                )
 
-                    clean_room_fragment_text = aci_policy.generate_fragment("payload", "1", OutputType.RAW)
-                    self.assertIsNotNone(clean_room_fragment_text)
+                clean_room_fragment_text = aci_policy.generate_fragment("payload", "1", OutputType.RAW)
+                self.assertIsNotNone(clean_room_fragment_text)
         except Exception as e:
             raise AccContainerError("Could not get image from tar file") from e
 
@@ -535,9 +535,8 @@ class FragmentPolicyGeneratingDebugMode(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        with load_policy_from_json(cls.custom_json, debug_mode=True) as aci_policy:
-            aci_policy.populate_policy_content_for_all_images()
-            cls.aci_policy = aci_policy
+        cls.aci_policy = load_policy_from_json(cls.custom_json, debug_mode=True)[0]
+        cls.aci_policy.populate_policy_content_for_all_images()
 
     def test_debug_processes(self):
         policy = self.aci_policy.get_serialized_output(
@@ -613,9 +612,8 @@ class FragmentSidecarValidation(unittest.TestCase):
     def setUpClass(cls):
         cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
         cls.aci_policy.populate_policy_content_for_all_images()
-        with load_policy_from_json(cls.custom_json2) as aci_policy2:
-            aci_policy2.populate_policy_content_for_all_images()
-            cls.aci_policy2 = aci_policy2
+        cls.aci_policy2 = load_policy_from_json(cls.custom_json2)[0]
+        cls.aci_policy2.populate_policy_content_for_all_images()
 
     def test_fragment_sidecar(self):
         is_valid, diff = self.aci_policy.validate_sidecars()
@@ -784,9 +782,8 @@ class FragmentPolicySigning(unittest.TestCase):
 
         cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
         cls.aci_policy.populate_policy_content_for_all_images()
-        with load_policy_from_json(cls.custom_json2) as aci_policy2:
-            aci_policy2.populate_policy_content_for_all_images()
-            cls.aci_policy2 = aci_policy2
+        cls.aci_policy2 = load_policy_from_json(cls.custom_json2)[0]
+        cls.aci_policy2.populate_policy_content_for_all_images()
 
     def test_signing(self):
         filename = "payload.rego"

@@ -365,7 +365,7 @@ spec:
                 raise Exception("Error creating certificate chain")
 
     def test_compare_policy_sources(self):
-        custom_policy = load_policy_from_json(self.custom_json)
+        custom_policy = load_policy_from_json(self.custom_json)[0]
         custom_policy.populate_policy_content_for_all_images()
         virtual_node_policy = load_policy_from_virtual_node_yaml_str(self.custom_yaml)[0]
         virtual_node_policy.populate_policy_content_for_all_images()

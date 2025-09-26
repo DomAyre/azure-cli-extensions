@@ -314,7 +314,7 @@ def acifragmentgen_confcom(
             tar_mapping = os_util.load_tar_mapping_from_config_file(input_path)
         policy = security_policy.load_policy_from_json_file(
             input_path, debug_mode=debug_mode, disable_stdio=disable_stdio
-        )
+        )[0]
     # get all of the fragments that are being used in the policy
     # and associate them with each container group
     fragment_policy_list = []
