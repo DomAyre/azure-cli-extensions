@@ -628,32 +628,25 @@ def load_policy_from_arm_template_str(
 
     aci_policies = []
 
-    if included_fragments is None:
-        included_fragments = []
-
-    if not exclude_default_fragments:
-        for idx, fragment in enumerate(config.DEFAULT_REGO_FRAGMENTS):
-            if infrastructure_svn:
-                fragment["minimum_svn"] = infrastructure_svn
-            included_fragments.insert(idx, fragment)
-
     try:
         for policy_spec in arm_to_aci_policy_spec(
             arm_template=json.loads(template_data),
             arm_template_parameters=json.loads(parameter_data) if parameter_data else {},
-            fragments=[AciFragmentSpec(**fragment) for fragment in included_fragments],
+            include_infrastructure_fragment=not exclude_default_fragments,
+            infrastructure_fragment_min_svn=infrastructure_svn,
             debug_mode=debug_mode,
             allow_stdio_access=not disable_stdio,
             approve_wildcards=approve_wildcards,
         ):
-            aci_policies.append(load_policy_from_json(
+            policy_spec.fragments.extend(included_fragments or [])
+            aci_policies.extend(load_policy_from_json(
                 json.dumps(asdict(policy_spec)),
                 debug_mode,
                 disable_stdio,
                 infrastructure_svn,
-                # Fragments are already parsed
-                True,
+                exclude_default_fragments,
             ))
+
     # Catch broad exception since we don't want to assume what errors might occur pylint: disable=W0718
     except Exception as e:
         eprint(f"Error processing ARM template: {e}")
@@ -734,7 +727,7 @@ def load_policy_from_json_file(
     disable_stdio: bool = False,
     infrastructure_svn: str = None,
     exclude_default_fragments: bool = False,
-) -> AciPolicy:
+) -> List[AciPolicy]:
     json_content = os_util.load_str_from_file(data)
     return load_policy_from_json(
         json_content,
@@ -752,7 +745,6 @@ def load_policy_from_json(
     infrastructure_svn: str = None,
     exclude_default_fragments: bool = False,
 ) -> List[AciPolicy]:
-    output_containers = []
     # 1) Parse incoming string as JSON
     policy_input_json = os_util.load_json_from_str(data)
 
@@ -762,6 +754,19 @@ def load_policy_from_json(
     policies = []
 
     for policy_spec in policy_input_json:
+
+        output_containers = []
+
+        policy_spec_exclude_default_fragments = exclude_default_fragments or (
+            not policy_spec.get("include_infrastructure_fragment", True)
+        )
+
+        policy_spec_debug_mode = debug_mode or policy_spec.get("profile", "strict") == "debug"
+
+        policy_spec_disable_stdio = disable_stdio or not policy_spec.get("allow_stdio_access", True)
+
+        policy_spec_infrastructure_svn = infrastructure_svn or policy_spec.get("infrastructure_fragment_min_svn")
+
         if not isinstance(policy_spec, dict):
             eprint("Input JSON is not a valid dictionary")
 
@@ -866,7 +871,7 @@ def load_policy_from_json(
 
             envs += process_env_vars_from_config(container_properties)
 
-            if debug_mode:
+            if policy_spec_debug_mode:
                 for exec_process in config.DEBUG_MODE_SETTINGS.get(config.ACI_FIELD_CONTAINERS_EXEC_PROCESSES, []):
                     if exec_process not in exec_processes:
                         exec_processes.append(exec_process)
@@ -884,7 +889,7 @@ def load_policy_from_json(
                     config.ACI_FIELD_CONTAINERS_MOUNTS: mounts,
                     config.ACI_FIELD_CONTAINERS_EXEC_PROCESSES: exec_processes,
                     config.ACI_FIELD_CONTAINERS_SIGNAL_CONTAINER_PROCESSES: [],
-                    config.ACI_FIELD_CONTAINERS_ALLOW_STDIO_ACCESS: not disable_stdio,
+                    config.ACI_FIELD_CONTAINERS_ALLOW_STDIO_ACCESS: not policy_spec_disable_stdio,
                     config.ACI_FIELD_CONTAINERS_SECURITY_CONTEXT: case_insensitive_dict_get(
                         container_properties, config.ACI_FIELD_TEMPLATE_SECURITY_CONTEXT
                     ),
@@ -892,27 +897,27 @@ def load_policy_from_json(
             )
 
         # Add default fragments if necessary
-        if not exclude_default_fragments:
+        if not policy_spec_exclude_default_fragments:
             for fragment in config.DEFAULT_REGO_FRAGMENTS:
                 if not any(fragment["feed"] == f["feed"] for f in rego_fragments):
                     rego_fragments.append(copy.deepcopy(fragment))
 
         # changes the svn of the infrastructure fragment provided by ACI
-        if infrastructure_svn:
+        if policy_spec_infrastructure_svn:
             # assumes the first DEFAULT_REGO_FRAGMENT is always the
             # infrastructure fragment
             rego_fragments[0][
                 config.POLICY_FIELD_CONTAINERS_ELEMENTS_REGO_FRAGMENTS_MINIMUM_SVN
-            ] = infrastructure_svn
+            ] = policy_spec_infrastructure_svn
 
         policies.append(AciPolicy(
             {
                 config.ACI_FIELD_VERSION: version,
                 config.ACI_FIELD_CONTAINERS: output_containers,
             },
-            disable_stdio=disable_stdio,
+            disable_stdio=policy_spec_disable_stdio,
             rego_fragments=rego_fragments,
-            debug_mode=debug_mode,
+            debug_mode=policy_spec_debug_mode,
             is_vn2=scenario.lower() == config.VN2,
         ))
 

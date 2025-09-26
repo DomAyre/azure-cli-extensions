@@ -1,10 +1,12 @@
 [
   {
+    "allow_stdio_access": true,
     "containers": [
       {
         "name": "container1",
         "properties": {
           "allowStdioAccess": true,
+          "command": [],
           "environmentVariables": [
             {
               "name": "MY_VAR",
@@ -73,6 +75,7 @@
               "value": ".+"
             }
           ],
+          "execProcesses": [],
           "image": "mcr.microsoft.com/azurelinux/distroless/base@sha256:1e77d97e1e39f22ed9c52f49b3508b4c1044cec23743df9098ac44e025f654f2",
           "volumeMounts": [
             {
@@ -84,6 +87,9 @@
           ]
         }
       }
-    ]
+    ],
+    "fragments": [],
+    "include_infrastructure_fragment": false,
+    "profile": "strict"
   }
 ]

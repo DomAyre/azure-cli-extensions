@@ -1,10 +1,12 @@
 [
   {
+    "allow_stdio_access": false,
     "containers": [
       {
         "name": "container1",
         "properties": {
           "allowStdioAccess": false,
+          "command": [],
           "environmentVariables": [
             {
               "name": "TERM",
@@ -67,6 +69,7 @@
               "value": ".+"
             }
           ],
+          "execProcesses": [],
           "image": "mcr.microsoft.com/azurelinux/distroless/base@sha256:1e77d97e1e39f22ed9c52f49b3508b4c1044cec23743df9098ac44e025f654f2",
           "securityContext": {
             "runAsUser": 1234
@@ -82,16 +85,8 @@
         }
       }
     ],
-    "fragments": [
-      {
-        "feed": "mcr.microsoft.com/aci/aci-cc-infra-fragment",
-        "includes": [
-          "containers",
-          "fragments"
-        ],
-        "issuer": "did:x509:0:sha256:I__iuL25oXEVFdTP_aBLx_eT1RPHbCQ_ECBQfYZpt9s::eku:1.3.6.1.4.1.311.76.59.1.3",
-        "minimum_svn": "1"
-      }
-    ]
+    "fragments": [],
+    "include_infrastructure_fragment": true,
+    "profile": "strict"
   }
 ]

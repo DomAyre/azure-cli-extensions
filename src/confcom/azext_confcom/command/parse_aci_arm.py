@@ -7,10 +7,7 @@ from azext_confcom.lib.arm_to_aci_policy_spec import AciFragmentSpec, arm_to_aci
 
 def _omit_none_dict_factory(items):
     """Dict factory for dataclasses.asdict that drops None values."""
-    return {key: value for key, value in items if (
-        value is not None and
-        value != []
-    )}
+    return {key: value for key, value in items if (value is not None)}
 
 
 def parse_aci_arm(
@@ -34,15 +31,8 @@ def parse_aci_arm(
     aci_policy_specs = list(arm_to_aci_policy_spec(
         arm_template=arm_template,
         arm_template_parameters=arm_template_parameters,
-        fragments=[
-            AciFragmentSpec(
-                feed=fragment["feed"],
-                issuer=fragment["issuer"],
-                includes=fragment["includes"],
-                minimum_svn=infrastructure_svn or fragment["minimum_svn"],
-            )
-            for fragment in config.DEFAULT_REGO_FRAGMENTS
-        ] if not exclude_default_fragments else [],
+        include_infrastructure_fragment=not exclude_default_fragments,
+        infrastructure_fragment_min_svn=infrastructure_svn,
         debug_mode=debug_mode,
         allow_stdio_access=not disable_stdio,
         approve_wildcards=approve_wildcards,

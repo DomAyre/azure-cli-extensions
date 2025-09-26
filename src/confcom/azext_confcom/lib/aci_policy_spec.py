@@ -8,6 +8,9 @@ from typing import Optional
 from typing_extensions import Literal
 
 
+AciProfile = Literal["strict", "debug"]
+
+
 @dataclass
 class AciContainerPropertyEnvVariable:
     name: str
@@ -82,3 +85,8 @@ class AciContainerSpec:
 class AciPolicySpec:
     fragments: Optional[list[AciFragmentSpec]]
     containers: Optional[list[AciContainerSpec]]
+    profile: AciProfile = "strict"
+    include_infrastructure_fragment: bool = True
+    infrastructure_fragment_min_svn: Optional[str] = None
+    allow_stdio_access: bool = True
+

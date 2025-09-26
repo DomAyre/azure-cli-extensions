@@ -192,7 +192,8 @@ def arm_container_group_to_aci_policy_spec_fragments(
 def arm_container_group_to_aci_policy_spec(
     container_group: dict,
     parameters: dict,
-    fragments: list[AciFragmentSpec],
+    include_infrastructure_fragment: bool,
+    infrastructure_fragment_min_svn: Optional[str],
     debug_mode: bool,
     allow_stdio_access: bool,
     approve_wildcards: bool,
@@ -203,7 +204,6 @@ def arm_container_group_to_aci_policy_spec(
 
     return AciPolicySpec(
         fragments=[
-            *(fragments if not container_group.get("tags", {}).get("Annotate-zero-sidecar") else []),
             *arm_container_group_to_aci_policy_spec_fragments(container_group),
         ],
         containers=[
@@ -216,14 +216,19 @@ def arm_container_group_to_aci_policy_spec(
                 approve_wildcards=approve_wildcards,
             )
             for c in containers + container_group.get("properties", {}).get("initContainers", [])
-        ]
+        ],
+        profile="debug" if debug_mode else "strict",
+        include_infrastructure_fragment=include_infrastructure_fragment,
+        infrastructure_fragment_min_svn=infrastructure_fragment_min_svn,
+        allow_stdio_access=allow_stdio_access,
     )
 
 
 def arm_to_aci_policy_spec(
     arm_template: dict,
     arm_template_parameters: dict,
-    fragments: list[AciFragmentSpec],
+    include_infrastructure_fragment: bool = True,
+    infrastructure_fragment_min_svn: Optional[str] = None,
     debug_mode: bool = False,
     allow_stdio_access: bool = True,
     approve_wildcards: bool = False,
@@ -238,8 +243,16 @@ def arm_to_aci_policy_spec(
         parser = {
             "Microsoft.ContainerInstance/containerGroups": arm_container_group_to_aci_policy_spec,
             "Microsoft.ContainerInstance/containerGroupProfiles": arm_container_group_to_aci_policy_spec,
-        }.get(resource["type"], (lambda r, p, f, d, io, w: None))
+        }.get(resource["type"], (lambda r, p, f, m, d, io, w: None))
 
-        spec = parser(resource, parameters, fragments, debug_mode, allow_stdio_access, approve_wildcards)
+        spec = parser(
+            resource,
+            parameters,
+            include_infrastructure_fragment,
+            infrastructure_fragment_min_svn,
+            debug_mode,
+            allow_stdio_access,
+            approve_wildcards
+        )
         if spec is not None:
             yield spec

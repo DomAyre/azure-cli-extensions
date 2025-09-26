@@ -86,21 +86,15 @@ def test_acipolicygen_arm(sample_directory, generated_policy_path):
 )
 def test_acipolicygen_spec(policy_spec_path):
 
-    if policy_spec_path in {
-        ("multi_container_groups/policy_spec.json"),
-        ("multi_container_groups/policy_spec_disable_stdio.json"),
-        ("multi_container_groups/policy_spec_debug.json"),
-        ("multi_container_groups/policy_spec_infrastructure_svn.json"),
-        ("multi_container_groups/policy_spec_exclude_default_fragment.json"),
-    }:
+    if policy_spec_path in [
+        # Add known failing tests here
+    ]:
         pytest.skip("Skipping test due to known issue")
 
     policy_spec_path = os.path.join(SAMPLES_ROOT, policy_spec_path)
     expected_policy_path = policy_spec_path.replace("policy_spec", "policy").replace(".json", ".rego")
     with open(expected_policy_path, "r", encoding="utf-8") as f:
         expected_policy = f.read()
-
-    flags = POLICYGEN_ARGS[os.path.basename(expected_policy_path)]
 
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
@@ -110,10 +104,9 @@ def test_acipolicygen_spec(policy_spec_path):
             arm_template_parameters=None,
             image_name=None,
             virtual_node_yaml_path=None,
-            infrastructure_svn=flags.pop("infrastructure_svn", None),
+            infrastructure_svn=None,
             tar_mapping_location=None,
             outraw=True,
-            **flags,
         )
     actual_policy = buffer.getvalue()
 
