@@ -62,8 +62,9 @@ class MountEnforcement(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
-        cls.aci_policy.populate_policy_content_for_all_images()
+        with load_policy_from_json(cls.custom_json)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
+            cls.aci_policy = aci_policy
 
     def test_user_container_customized_mounts(self):
         image = next(
@@ -260,8 +261,9 @@ class PolicyGenerating(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
-        cls.aci_policy.populate_policy_content_for_all_images()
+        with load_policy_from_json(cls.custom_json)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
+            cls.aci_policy = aci_policy
 
     def test_injected_sidecar_container_msi(self):
         image = self.aci_policy.get_images()[0]
@@ -377,8 +379,9 @@ class PolicyGeneratingDebugMode(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.aci_policy = load_policy_from_json(cls.custom_json, debug_mode=True)[0]
-        cls.aci_policy.populate_policy_content_for_all_images()
+        with load_policy_from_json(cls.custom_json, debug_mode=True)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
+            cls.aci_policy = aci_policy
 
     def test_debug_flags(self):
 
@@ -458,10 +461,12 @@ class SidecarValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.aci_policy = load_policy_from_json(cls.custom_json)[0]
-        cls.aci_policy.populate_policy_content_for_all_images()
-        cls.aci_policy2 = load_policy_from_json(cls.custom_json2)[0]
-        cls.aci_policy2.populate_policy_content_for_all_images()
+        with load_policy_from_json(cls.custom_json)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
+            cls.aci_policy = aci_policy
+        with load_policy_from_json(cls.custom_json2)[0] as aci_policy2:
+            aci_policy2.populate_policy_content_for_all_images()
+            cls.aci_policy2 = aci_policy2
 
     def test_sidecar(self):
         is_valid, diff = self.aci_policy.validate_sidecars()
@@ -511,19 +516,19 @@ class CustomJsonParsing(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        # pull actual image to local for next step
-        image = next(
-            (
-                img
-                for img in aci_policy.get_images()
-                if isinstance(img, UserContainerImage)
-            ),
-            None,
-        )
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            # pull actual image to local for next step
+            image = next(
+                (
+                    img
+                    for img in aci_policy.get_images()
+                    if isinstance(img, UserContainerImage)
+                ),
+                None,
+            )
 
-        expected_working_dir = "/customized/absolute/path"
-        self.assertEqual(image._workingDir, expected_working_dir)
+            expected_working_dir = "/customized/absolute/path"
+            self.assertEqual(image._workingDir, expected_working_dir)
 
     def test_allow_elevated(self):
         custom_json = """
@@ -541,19 +546,19 @@ class CustomJsonParsing(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        # pull actual image to local for next step
-        image = next(
-            (
-                img
-                for img in aci_policy.get_images()
-                if isinstance(img, UserContainerImage)
-            ),
-            None,
-        )
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            # pull actual image to local for next step
+            image = next(
+                (
+                    img
+                    for img in aci_policy.get_images()
+                    if isinstance(img, UserContainerImage)
+                ),
+                None,
+            )
 
-        expected_allow_elevated = True
-        self.assertEqual(image._allow_elevated, expected_allow_elevated)
+            expected_allow_elevated = True
+            self.assertEqual(image._allow_elevated, expected_allow_elevated)
 
     def test_image_layers_python(self):
         custom_json = """
@@ -569,21 +574,21 @@ class CustomJsonParsing(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        # pull actual image to local for next step
-        with DockerClient() as client:
-            image_ref = aci_policy.get_images()[0]
-            image = client.images.pull(image_ref.containerImage)
-        aci_policy.populate_policy_content_for_all_images()
-        layers = aci_policy.get_images()[0]._layers
-        expected_layers = [
-            "679545575069dd4dc31f4d991094d669ca346950c3bc3aa465a9343a7369a8c9",
-            "ff808293653ce6dc4aa63381a8ceaec73c15618bbc6ccb30a44441d638c07af7",
-            "1dd5fd89c3a5a58b669d14d9a693aff3f16d3a8ec643c9d7f2d24f25297cfbc7"
-        ]
-        self.assertEqual(len(layers), len(expected_layers))
-        for i in range(len(expected_layers)):
-            self.assertEqual(layers[i], expected_layers[i])
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            # pull actual image to local for next step
+            with DockerClient() as client:
+                image_ref = aci_policy.get_images()[0]
+                image = client.images.pull(image_ref.containerImage)
+            aci_policy.populate_policy_content_for_all_images()
+            layers = aci_policy.get_images()[0]._layers
+            expected_layers = [
+                "679545575069dd4dc31f4d991094d669ca346950c3bc3aa465a9343a7369a8c9",
+                "ff808293653ce6dc4aa63381a8ceaec73c15618bbc6ccb30a44441d638c07af7",
+                "1dd5fd89c3a5a58b669d14d9a693aff3f16d3a8ec643c9d7f2d24f25297cfbc7"
+            ]
+            self.assertEqual(len(layers), len(expected_layers))
+            for i in range(len(expected_layers)):
+                self.assertEqual(layers[i], expected_layers[i])
 
     def test_docker_pull(self):
         custom_json = """
@@ -599,16 +604,16 @@ class CustomJsonParsing(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        with DockerClient() as client:
-            image_ref = aci_policy.get_images()[0]
-            image = client.images.pull(image_ref.base, tag=image_ref.tag)
-        self.assertIsNotNone(image.id)
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            with DockerClient() as client:
+                image_ref = aci_policy.get_images()[0]
+                image = client.images.pull(image_ref.base, tag=image_ref.tag)
+            self.assertIsNotNone(image.id)
 
-        self.assertEqual(
-            image.tags[0],
-            "mcr.microsoft.com/azurelinux/distroless/base:3.0",
-        )
+            self.assertEqual(
+                image.tags[0],
+                "mcr.microsoft.com/azurelinux/distroless/base:3.0",
+            )
 
     def test_infrastructure_svn(self):
         custom_json = """
@@ -624,11 +629,11 @@ class CustomJsonParsing(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        aci_policy.populate_policy_content_for_all_images()
-        output = aci_policy.get_serialized_output(OutputType.PRETTY_PRINT)
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
+            output = aci_policy.get_serialized_output(OutputType.PRETTY_PRINT)
 
-        self.assertTrue('"0.2.3"' in output)
+            self.assertTrue('"0.2.3"' in output)
 
     def test_environment_variables_parsing(self):
         custom_json = """
@@ -702,15 +707,15 @@ class CustomJsonParsing(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        aci_policy.populate_policy_content_for_all_images()
-        self.assertTrue(
-            json.loads(
-                aci_policy.get_serialized_output(
-                    output_type=OutputType.RAW, rego_boilerplate=False
-                )
-            )[0][config.POLICY_FIELD_CONTAINERS_ELEMENTS_ALLOW_STDIO_ACCESS]
-        )
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
+            self.assertTrue(
+                json.loads(
+                    aci_policy.get_serialized_output(
+                        output_type=OutputType.RAW, rego_boilerplate=False
+                    )
+                )[0][config.POLICY_FIELD_CONTAINERS_ELEMENTS_ALLOW_STDIO_ACCESS]
+            )
 
     def test_stdio_access_updated(self):
         custom_json = """
@@ -727,16 +732,16 @@ class CustomJsonParsing(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json, disable_stdio=True)[0]
-        aci_policy.populate_policy_content_for_all_images()
+        with load_policy_from_json(custom_json, disable_stdio=True)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
 
-        self.assertFalse(
-            json.loads(
-                aci_policy.get_serialized_output(
-                    output_type=OutputType.RAW, rego_boilerplate=False
-                )
-            )[0][config.POLICY_FIELD_CONTAINERS_ELEMENTS_ALLOW_STDIO_ACCESS]
-        )
+            self.assertFalse(
+                json.loads(
+                    aci_policy.get_serialized_output(
+                        output_type=OutputType.RAW, rego_boilerplate=False
+                    )
+                )[0][config.POLICY_FIELD_CONTAINERS_ELEMENTS_ALLOW_STDIO_ACCESS]
+            )
 
     def test_omit_id(self):
         image_name = "mcr.microsoft.com/azurelinux/base/python:3.12"
@@ -754,24 +759,24 @@ class CustomJsonParsing(unittest.TestCase):
             ]
         }}
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        aci_policy.populate_policy_content_for_all_images()
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
 
-        self.assertIsNone(
-            json.loads(
-                aci_policy.get_serialized_output(
-                    output_type=OutputType.RAW, rego_boilerplate=False, omit_id=True
-                )
-            )[0].get(config.POLICY_FIELD_CONTAINERS_ID)
-        )
+            self.assertIsNone(
+                json.loads(
+                    aci_policy.get_serialized_output(
+                        output_type=OutputType.RAW, rego_boilerplate=False, omit_id=True
+                    )
+                )[0].get(config.POLICY_FIELD_CONTAINERS_ID)
+            )
 
-        self.assertEqual(
-            json.loads(
-                aci_policy.get_serialized_output(
-                    output_type=OutputType.RAW, rego_boilerplate=False, omit_id=False
-                )
-            )[0].get(config.POLICY_FIELD_CONTAINERS_ID), image_name
-        )
+            self.assertEqual(
+                json.loads(
+                    aci_policy.get_serialized_output(
+                        output_type=OutputType.RAW, rego_boilerplate=False, omit_id=False
+                    )
+                )[0].get(config.POLICY_FIELD_CONTAINERS_ID), image_name
+            )
 
 
 class CustomJsonParsingIncorrect(unittest.TestCase):
@@ -791,10 +796,10 @@ class CustomJsonParsingIncorrect(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        with self.assertRaises(SystemExit) as exc_info:
-            aci_policy.populate_policy_content_for_all_images()
-        self.assertEqual(exc_info.exception.code, 1)
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            with self.assertRaises(SystemExit) as exc_info:
+                aci_policy.populate_policy_content_for_all_images()
+            self.assertEqual(exc_info.exception.code, 1)
 
     def test_incorrect_allow_elevated_data_type(self):
         custom_json = """
@@ -922,16 +927,16 @@ class CustomJsonParsingIncorrect(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        aci_policy.populate_policy_content_for_all_images()
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
 
-        self.assertIsNotNone(
-            json.loads(
-                aci_policy.get_serialized_output(
-                    output_type=OutputType.RAW, rego_boilerplate=False, omit_id=True
-                )
-            )[0].get(config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS)
-        )
+            self.assertIsNotNone(
+                json.loads(
+                    aci_policy.get_serialized_output(
+                        output_type=OutputType.RAW, rego_boilerplate=False, omit_id=True
+                    )
+                )[0].get(config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS)
+            )
 
 
     def test_json_missing_command(self):
@@ -953,15 +958,15 @@ class CustomJsonParsingIncorrect(unittest.TestCase):
             ]
         }
         """
-        aci_policy = load_policy_from_json(custom_json)[0]
-        aci_policy.populate_policy_content_for_all_images()
+        with load_policy_from_json(custom_json)[0] as aci_policy:
+            aci_policy.populate_policy_content_for_all_images()
 
-        self.assertIsNotNone(
-            json.loads(
-                aci_policy.get_serialized_output(
-                    output_type=OutputType.RAW, rego_boilerplate=False, omit_id=True
-                )
-            )[0].get(config.POLICY_FIELD_CONTAINERS_ELEMENTS_COMMANDS)
-        )
+            self.assertIsNotNone(
+                json.loads(
+                    aci_policy.get_serialized_output(
+                        output_type=OutputType.RAW, rego_boilerplate=False, omit_id=True
+                    )
+                )[0].get(config.POLICY_FIELD_CONTAINERS_ELEMENTS_COMMANDS)
+            )
 
 

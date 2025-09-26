@@ -42,8 +42,9 @@ class PolicyGeneratingImage(unittest.TestCase):
         with load_policy_from_image_name("mcr.microsoft.com/azurelinux/base/python:3.12") as aci_policy:
             aci_policy.populate_policy_content_for_all_images(individual_image=True)
             cls.aci_policy = aci_policy
-        cls.custom_policy = load_policy_from_json(cls.custom_json)[0]
-        cls.custom_policy.populate_policy_content_for_all_images()
+        with load_policy_from_json(cls.custom_json)[0] as custom_policy:
+            custom_policy.populate_policy_content_for_all_images()
+            cls.custom_policy = custom_policy
 
     def test_image_policy(self):
         # deep diff the output policies from the regular policy.json and the single image
@@ -77,8 +78,9 @@ class PolicyGeneratingImageSidecar(unittest.TestCase):
         ) as aci_policy:
             aci_policy.populate_policy_content_for_all_images(individual_image=True)
             cls.aci_policy = aci_policy
-        cls.custom_policy = load_policy_from_json(cls.custom_json)[0]
-        cls.custom_policy.populate_policy_content_for_all_images(individual_image=True)
+        with load_policy_from_json(cls.custom_json)[0] as custom_policy:
+            custom_policy.populate_policy_content_for_all_images(individual_image=True)
+            cls.custom_policy = custom_policy
 
     def test_sidecar_image_policy(self):
         self.assertEqual(self.aci_policy.get_serialized_output(), self.custom_policy.get_serialized_output())
