@@ -751,161 +751,172 @@ def load_policy_from_json(
     disable_stdio: bool = False,
     infrastructure_svn: str = None,
     exclude_default_fragments: bool = False,
-) -> AciPolicy:
+) -> List[AciPolicy]:
     output_containers = []
     # 1) Parse incoming string as JSON
     policy_input_json = os_util.load_json_from_str(data)
-    if not isinstance(policy_input_json, dict):
-        eprint("Input JSON is not a valid dictionary")
 
-    is_old_format = detect_old_format(policy_input_json)
-    if is_old_format:
-        policy_input_json = convert_config_v0_to_v1(policy_input_json)
+    if not isinstance(policy_input_json, list):
+        policy_input_json = [policy_input_json]
 
-    # 2) Extract top-level fields
-    input_containers = case_insensitive_dict_get(
-        policy_input_json, config.ACI_FIELD_CONTAINERS
-    ) or []
+    policies = []
 
-    version = case_insensitive_dict_get(
-        policy_input_json, config.ACI_FIELD_VERSION
-    )
+    for policy_spec in policy_input_json:
+        if not isinstance(policy_spec, dict):
+            eprint("Input JSON is not a valid dictionary")
 
-    if not version:
-        version = "1.0"
-        policy_input_json[config.ACI_FIELD_VERSION] = "1.0"
+        is_old_format = detect_old_format(policy_spec)
+        if is_old_format:
+            policy_spec = convert_config_v0_to_v1(policy_spec)
 
-    rego_fragments = case_insensitive_dict_get(
-        policy_input_json, config.ACI_FIELD_CONTAINERS_REGO_FRAGMENTS
-    ) or []
-
-    scenario = case_insensitive_dict_get(
-        policy_input_json, config.ACI_FIELD_SCENARIO
-    ) or ""
-
-    # 3) Process rego_fragments
-    standalone_rego_fragments = case_insensitive_dict_get(
-        policy_input_json, config.ACI_FIELD_TEMPLATE_STANDALONE_REGO_FRAGMENTS
-    )
-
-    if rego_fragments:
-        process_fragment_imports(rego_fragments)
-
-    if standalone_rego_fragments:
-        rego_fragments.extend(standalone_rego_fragments)
-
-    if not input_containers and not rego_fragments:
-        eprint(
-            f'Field ["{config.ACI_FIELD_CONTAINERS}"]' +
-            f' and field ["{config.ACI_FIELD_CONTAINERS_REGO_FRAGMENTS}"] can not both be empty.'
-        )
-
-    for container in input_containers:
-        container_properties = case_insensitive_dict_get(
-            container, config.ACI_FIELD_TEMPLATE_PROPERTIES
-        )
-
-        image_name = case_insensitive_dict_get(
-            container_properties, config.ACI_FIELD_TEMPLATE_IMAGE
-        )
-
-        if not image_name:
-            eprint(
-                f'Field ["{config.ACI_FIELD_TEMPLATE_IMAGE}"] is empty or cannot be found'
-            )
-
-        container_name = case_insensitive_dict_get(
-            container, config.ACI_FIELD_CONTAINERS_NAME
-        ) or image_name
-
-        if not container_name:
-            eprint(f'Field ["{config.ACI_FIELD_CONTAINERS_NAME}"] is empty or cannot be found')
-
-        exec_processes = case_insensitive_dict_get(
-            container_properties, config.ACI_FIELD_CONTAINERS_EXEC_PROCESSES
+        # 2) Extract top-level fields
+        input_containers = case_insensitive_dict_get(
+            policy_spec, config.ACI_FIELD_CONTAINERS
         ) or []
 
-        # add the signal section if it's not present
-        for exec_process in exec_processes:
-            if config.ACI_FIELD_CONTAINERS_SIGNAL_CONTAINER_PROCESSES not in exec_process:
-                exec_process[config.ACI_FIELD_CONTAINERS_SIGNAL_CONTAINER_PROCESSES] = []
-
-        extract_probe(exec_processes, container_properties, config.ACI_FIELD_CONTAINERS_READINESS_PROBE)
-        extract_probe(exec_processes, container_properties, config.ACI_FIELD_CONTAINERS_LIVENESS_PROBE)
-
-        container_security_context = case_insensitive_dict_get(
-            container_properties, config.ACI_FIELD_TEMPLATE_SECURITY_CONTEXT
-        ) or {}
-
-        working_dir = case_insensitive_dict_get(container_properties, config.ACI_FIELD_CONTAINERS_WORKINGDIR)
-
-        mounts = process_mounts_from_config(container_properties) + process_configmap(container_properties)
-        if (
-            scenario.lower() == config.VN2 and
-            case_insensitive_dict_get(container_security_context, config.ACI_FIELD_CONTAINERS_PRIVILEGED)
-        ):
-            mounts += config.DEFAULT_MOUNTS_PRIVILEGED_VIRTUAL_NODE
-
-        labels = case_insensitive_dict_get(policy_input_json, config.VIRTUAL_NODE_YAML_LABELS) or []
-        envs = []
-        # use workload identity
-        if (
-            scenario.lower() == config.VN2 and
-            config.VIRTUAL_NODE_YAML_LABEL_WORKLOAD_IDENTITY in labels and
-            case_insensitive_dict_get(labels, config.VIRTUAL_NODE_YAML_LABEL_WORKLOAD_IDENTITY)
-        ):
-            envs += config.VIRTUAL_NODE_ENV_RULES_WORKLOAD_IDENTITY
-            mounts += config.DEFAULT_MOUNTS_WORKLOAD_IDENTITY_VIRTUAL_NODE
-
-        envs += process_env_vars_from_config(container_properties)
-
-        if debug_mode:
-            for exec_process in config.DEBUG_MODE_SETTINGS.get(config.ACI_FIELD_CONTAINERS_EXEC_PROCESSES, []):
-                if exec_process not in exec_processes:
-                    exec_processes.append(exec_process)
-
-        output_containers.append(
-            {
-                config.ACI_FIELD_CONTAINERS_ID: image_name,
-                config.ACI_FIELD_CONTAINERS_NAME: container_name,
-                config.ACI_FIELD_CONTAINERS_CONTAINERIMAGE: image_name,
-                config.ACI_FIELD_CONTAINERS_WORKINGDIR: working_dir,
-                config.ACI_FIELD_CONTAINERS_ENVS: envs,
-                config.ACI_FIELD_CONTAINERS_COMMAND: case_insensitive_dict_get(
-                    container_properties, config.ACI_FIELD_TEMPLATE_COMMAND
-                ) or [],
-                config.ACI_FIELD_CONTAINERS_MOUNTS: mounts,
-                config.ACI_FIELD_CONTAINERS_EXEC_PROCESSES: exec_processes,
-                config.ACI_FIELD_CONTAINERS_SIGNAL_CONTAINER_PROCESSES: [],
-                config.ACI_FIELD_CONTAINERS_ALLOW_STDIO_ACCESS: not disable_stdio,
-                config.ACI_FIELD_CONTAINERS_SECURITY_CONTEXT: case_insensitive_dict_get(
-                    container_properties, config.ACI_FIELD_TEMPLATE_SECURITY_CONTEXT
-                ),
-            }
+        version = case_insensitive_dict_get(
+            policy_spec, config.ACI_FIELD_VERSION
         )
 
-    # Add default fragments if necessary
-    if not exclude_default_fragments:
-        rego_fragments.extend(copy.deepcopy(config.DEFAULT_REGO_FRAGMENTS))
+        if not version:
+            version = "1.0"
+            policy_spec[config.ACI_FIELD_VERSION] = "1.0"
 
-    # changes the svn of the infrastructure fragment provided by ACI
-    if infrastructure_svn:
-        # assumes the first DEFAULT_REGO_FRAGMENT is always the
-        # infrastructure fragment
-        rego_fragments[0][
-            config.POLICY_FIELD_CONTAINERS_ELEMENTS_REGO_FRAGMENTS_MINIMUM_SVN
-        ] = infrastructure_svn
+        rego_fragments = case_insensitive_dict_get(
+            policy_spec, config.ACI_FIELD_CONTAINERS_REGO_FRAGMENTS
+        ) or []
 
-    return AciPolicy(
-        {
-            config.ACI_FIELD_VERSION: version,
-            config.ACI_FIELD_CONTAINERS: output_containers,
-        },
-        disable_stdio=disable_stdio,
-        rego_fragments=rego_fragments,
-        debug_mode=debug_mode,
-        is_vn2=scenario.lower() == config.VN2,
-    )
+        scenario = case_insensitive_dict_get(
+            policy_spec, config.ACI_FIELD_SCENARIO
+        ) or ""
+
+        # 3) Process rego_fragments
+        standalone_rego_fragments = case_insensitive_dict_get(
+            policy_spec, config.ACI_FIELD_TEMPLATE_STANDALONE_REGO_FRAGMENTS
+        )
+
+        if rego_fragments:
+            process_fragment_imports(rego_fragments)
+
+        if standalone_rego_fragments:
+            rego_fragments.extend(standalone_rego_fragments)
+
+        if not input_containers and not rego_fragments:
+            eprint(
+                f'Field ["{config.ACI_FIELD_CONTAINERS}"]' +
+                f' and field ["{config.ACI_FIELD_CONTAINERS_REGO_FRAGMENTS}"] can not both be empty.'
+            )
+
+        for container in input_containers:
+            container_properties = case_insensitive_dict_get(
+                container, config.ACI_FIELD_TEMPLATE_PROPERTIES
+            )
+
+            image_name = case_insensitive_dict_get(
+                container_properties, config.ACI_FIELD_TEMPLATE_IMAGE
+            )
+
+            if not image_name:
+                eprint(
+                    f'Field ["{config.ACI_FIELD_TEMPLATE_IMAGE}"] is empty or cannot be found'
+                )
+
+            container_name = case_insensitive_dict_get(
+                container, config.ACI_FIELD_CONTAINERS_NAME
+            ) or image_name
+
+            if not container_name:
+                eprint(f'Field ["{config.ACI_FIELD_CONTAINERS_NAME}"] is empty or cannot be found')
+
+            exec_processes = case_insensitive_dict_get(
+                container_properties, config.ACI_FIELD_CONTAINERS_EXEC_PROCESSES
+            ) or []
+
+            # add the signal section if it's not present
+            for exec_process in exec_processes:
+                if config.ACI_FIELD_CONTAINERS_SIGNAL_CONTAINER_PROCESSES not in exec_process:
+                    exec_process[config.ACI_FIELD_CONTAINERS_SIGNAL_CONTAINER_PROCESSES] = []
+
+            extract_probe(exec_processes, container_properties, config.ACI_FIELD_CONTAINERS_READINESS_PROBE)
+            extract_probe(exec_processes, container_properties, config.ACI_FIELD_CONTAINERS_LIVENESS_PROBE)
+
+            container_security_context = case_insensitive_dict_get(
+                container_properties, config.ACI_FIELD_TEMPLATE_SECURITY_CONTEXT
+            ) or {}
+
+            working_dir = case_insensitive_dict_get(container_properties, config.ACI_FIELD_CONTAINERS_WORKINGDIR)
+
+            mounts = process_mounts_from_config(container_properties) + process_configmap(container_properties)
+            if (
+                scenario.lower() == config.VN2 and
+                case_insensitive_dict_get(container_security_context, config.ACI_FIELD_CONTAINERS_PRIVILEGED)
+            ):
+                mounts += config.DEFAULT_MOUNTS_PRIVILEGED_VIRTUAL_NODE
+
+            labels = case_insensitive_dict_get(policy_spec, config.VIRTUAL_NODE_YAML_LABELS) or []
+            envs = []
+            # use workload identity
+            if (
+                scenario.lower() == config.VN2 and
+                config.VIRTUAL_NODE_YAML_LABEL_WORKLOAD_IDENTITY in labels and
+                case_insensitive_dict_get(labels, config.VIRTUAL_NODE_YAML_LABEL_WORKLOAD_IDENTITY)
+            ):
+                envs += config.VIRTUAL_NODE_ENV_RULES_WORKLOAD_IDENTITY
+                mounts += config.DEFAULT_MOUNTS_WORKLOAD_IDENTITY_VIRTUAL_NODE
+
+            envs += process_env_vars_from_config(container_properties)
+
+            if debug_mode:
+                for exec_process in config.DEBUG_MODE_SETTINGS.get(config.ACI_FIELD_CONTAINERS_EXEC_PROCESSES, []):
+                    if exec_process not in exec_processes:
+                        exec_processes.append(exec_process)
+
+            output_containers.append(
+                {
+                    config.ACI_FIELD_CONTAINERS_ID: image_name,
+                    config.ACI_FIELD_CONTAINERS_NAME: container_name,
+                    config.ACI_FIELD_CONTAINERS_CONTAINERIMAGE: image_name,
+                    config.ACI_FIELD_CONTAINERS_WORKINGDIR: working_dir,
+                    config.ACI_FIELD_CONTAINERS_ENVS: envs,
+                    config.ACI_FIELD_CONTAINERS_COMMAND: case_insensitive_dict_get(
+                        container_properties, config.ACI_FIELD_TEMPLATE_COMMAND
+                    ) or [],
+                    config.ACI_FIELD_CONTAINERS_MOUNTS: mounts,
+                    config.ACI_FIELD_CONTAINERS_EXEC_PROCESSES: exec_processes,
+                    config.ACI_FIELD_CONTAINERS_SIGNAL_CONTAINER_PROCESSES: [],
+                    config.ACI_FIELD_CONTAINERS_ALLOW_STDIO_ACCESS: not disable_stdio,
+                    config.ACI_FIELD_CONTAINERS_SECURITY_CONTEXT: case_insensitive_dict_get(
+                        container_properties, config.ACI_FIELD_TEMPLATE_SECURITY_CONTEXT
+                    ),
+                }
+            )
+
+        # Add default fragments if necessary
+        if not exclude_default_fragments:
+            for fragment in config.DEFAULT_REGO_FRAGMENTS:
+                if not any(fragment["feed"] == f["feed"] for f in rego_fragments):
+                    rego_fragments.append(copy.deepcopy(fragment))
+
+        # changes the svn of the infrastructure fragment provided by ACI
+        if infrastructure_svn:
+            # assumes the first DEFAULT_REGO_FRAGMENT is always the
+            # infrastructure fragment
+            rego_fragments[0][
+                config.POLICY_FIELD_CONTAINERS_ELEMENTS_REGO_FRAGMENTS_MINIMUM_SVN
+            ] = infrastructure_svn
+
+        policies.append(AciPolicy(
+            {
+                config.ACI_FIELD_VERSION: version,
+                config.ACI_FIELD_CONTAINERS: output_containers,
+            },
+            disable_stdio=disable_stdio,
+            rego_fragments=rego_fragments,
+            debug_mode=debug_mode,
+            is_vn2=scenario.lower() == config.VN2,
+        ))
+
+    return policies
 
 
 def load_policy_from_virtual_node_yaml_file(

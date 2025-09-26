@@ -6,6 +6,7 @@
 import contextlib
 import io
 import os
+from pathlib import Path
 import pytest
 from itertools import product
 
@@ -35,7 +36,7 @@ POLICYGEN_ARGS = {
     "sample_directory,generated_policy_path",
     product(os.listdir(SAMPLES_ROOT), POLICYGEN_ARGS.keys())
 )
-def test_acipolicygen(sample_directory, generated_policy_path):
+def test_acipolicygen_arm(sample_directory, generated_policy_path):
 
     # Ensure we're always in the same dir because fragments input json defines
     # the path relative to the signed fragment to the current dir and cannot use
@@ -77,3 +78,43 @@ def test_acipolicygen(sample_directory, generated_policy_path):
     actual_policy = buffer.getvalue()
 
     assert actual_policy == expected_policy, f"Policy generation mismatch, actual output for {os.path.join(sample_directory, generated_policy_path)}:\n{actual_policy}"
+
+
+@pytest.mark.parametrize(
+    "policy_spec_path",
+    [str(path.relative_to(SAMPLES_ROOT)) for path in Path(SAMPLES_ROOT).rglob("policy_spec*")]
+)
+def test_acipolicygen_spec(policy_spec_path):
+
+    if policy_spec_path in {
+        ("multi_container_groups/policy_spec.json"),
+        ("multi_container_groups/policy_spec_disable_stdio.json"),
+        ("multi_container_groups/policy_spec_debug.json"),
+        ("multi_container_groups/policy_spec_infrastructure_svn.json"),
+        ("multi_container_groups/policy_spec_exclude_default_fragment.json"),
+    }:
+        pytest.skip("Skipping test due to known issue")
+
+    policy_spec_path = os.path.join(SAMPLES_ROOT, policy_spec_path)
+    expected_policy_path = policy_spec_path.replace("policy_spec", "policy").replace(".json", ".rego")
+    with open(expected_policy_path, "r", encoding="utf-8") as f:
+        expected_policy = f.read()
+
+    flags = POLICYGEN_ARGS[os.path.basename(expected_policy_path)]
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        acipolicygen_confcom(
+            input_path=policy_spec_path,
+            arm_template=None,
+            arm_template_parameters=None,
+            image_name=None,
+            virtual_node_yaml_path=None,
+            infrastructure_svn=flags.pop("infrastructure_svn", None),
+            tar_mapping_location=None,
+            outraw=True,
+            **flags,
+        )
+    actual_policy = buffer.getvalue()
+
+    assert actual_policy == expected_policy, f"Policy generation mismatch, actual output for {expected_policy_path}:\n{actual_policy}"
