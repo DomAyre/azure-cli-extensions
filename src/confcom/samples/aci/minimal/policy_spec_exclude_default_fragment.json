@@ -1,89 +1,72 @@
 [
   {
-    "allow_stdio_access": true,
     "containers": [
       {
         "name": "container1",
         "properties": {
-          "allowStdioAccess": true,
-          "command": [],
           "environmentVariables": [
             {
               "name": "TERM",
-              "required": false,
               "strategy": "string",
               "value": "xterm"
             },
             {
               "name": "(?i)(FABRIC)_.+",
-              "required": false,
               "strategy": "re2",
               "value": ".+"
             },
             {
               "name": "HOSTNAME",
-              "required": false,
               "strategy": "re2",
               "value": ".+"
             },
             {
               "name": "T(E)?MP",
-              "required": false,
               "strategy": "re2",
               "value": ".+"
             },
             {
               "name": "FabricPackageFileName",
-              "required": false,
               "strategy": "re2",
               "value": ".+"
             },
             {
               "name": "HostedServiceName",
-              "required": false,
               "strategy": "re2",
               "value": ".+"
             },
             {
               "name": "IDENTITY_API_VERSION",
-              "required": false,
               "strategy": "re2",
               "value": ".+"
             },
             {
               "name": "IDENTITY_HEADER",
-              "required": false,
               "strategy": "re2",
               "value": ".+"
             },
             {
               "name": "IDENTITY_SERVER_THUMBPRINT",
-              "required": false,
               "strategy": "re2",
               "value": ".+"
             },
             {
               "name": "azurecontainerinstance_restarted_by",
-              "required": false,
               "strategy": "re2",
               "value": ".+"
             }
           ],
-          "execProcesses": [],
           "image": "mcr.microsoft.com/azurelinux/distroless/base@sha256:1e77d97e1e39f22ed9c52f49b3508b4c1044cec23743df9098ac44e025f654f2",
           "volumeMounts": [
             {
               "mountPath": "/etc/resolv.conf",
               "mountType": "resolvconf",
-              "name": "dns_resolve",
-              "readonly": false
+              "name": "dns_resolve"
             }
           ]
         }
       }
     ],
-    "fragments": [],
-    "include_infrastructure_fragment": false,
-    "profile": "strict"
+    "include_infrastructure_fragment": false
   }
 ]

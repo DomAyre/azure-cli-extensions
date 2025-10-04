@@ -873,7 +873,7 @@ def load_policy_from_json(
 
             if policy_spec_debug_mode:
                 for exec_process in config.DEBUG_MODE_SETTINGS.get(config.ACI_FIELD_CONTAINERS_EXEC_PROCESSES, []):
-                    if exec_process not in exec_processes:
+                    if exec_process["command"] not in [e["command"] for e in exec_processes]:
                         exec_processes.append(exec_process)
 
             output_containers.append(

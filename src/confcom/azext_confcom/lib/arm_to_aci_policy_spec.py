@@ -3,7 +3,8 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-from typing import Iterator
+import copy
+from typing import Iterator, Optional
 import json
 import re
 from azext_confcom import config
@@ -202,9 +203,21 @@ def arm_container_group_to_aci_policy_spec(
     containers = container_group.get("properties", {})["containers"]
     assert containers
 
+    def replace_min_svn(frag):
+        new_frag = copy.deepcopy(frag)
+        min_svn = new_frag.pop("minimum_svn")
+        return {
+            **new_frag,
+            "minimum_svn": infrastructure_fragment_min_svn or min_svn,
+        }
+
     return AciPolicySpec(
         fragments=[
             *arm_container_group_to_aci_policy_spec_fragments(container_group),
+            *([
+                AciFragmentSpec(**replace_min_svn(frag))
+                for frag in config.DEFAULT_REGO_FRAGMENTS
+            ] if include_infrastructure_fragment else []),
         ],
         containers=[
             arm_container_to_aci_policy_spec_container(
@@ -219,7 +232,6 @@ def arm_container_group_to_aci_policy_spec(
         ],
         profile="debug" if debug_mode else "strict",
         include_infrastructure_fragment=not container_group.get("tags", {}).get("Annotate-zero-sidecar", not include_infrastructure_fragment),
-        infrastructure_fragment_min_svn=infrastructure_fragment_min_svn,
         allow_stdio_access=allow_stdio_access,
     )
 

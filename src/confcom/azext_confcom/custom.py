@@ -501,6 +501,7 @@ def parse_aci_arm(
     infrastructure_svn: Optional[str],
     disable_stdio: bool,
     approve_wildcards: bool,
+    policy_format: str,
 ) -> str:
     return _parse_aci_arm(
         arm_template_path,
@@ -510,4 +511,5 @@ def parse_aci_arm(
         infrastructure_svn,
         disable_stdio,
         approve_wildcards,
+        policy_format,
     )

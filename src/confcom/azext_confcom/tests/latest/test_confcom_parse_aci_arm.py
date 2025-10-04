@@ -22,6 +22,7 @@ ARGS = {
     "policy_spec_exclude_default_fragment.json": {"exclude_default_fragments": True},
     "policy_spec_infrastructure_svn.json": {"infrastructure_svn": "99"},
     "policy_spec_disable_stdio.json": {"disable_stdio": True},
+    "policy_spec_minimal.json": {"policy_format": "minimal"},
 }
 
 
@@ -56,6 +57,7 @@ def test_parse_aci_arm(sample_directory, generated_policy_spec_path):
         infrastructure_svn=flags.get("infrastructure_svn", None),
         disable_stdio=flags.get("disable_stdio", False),
         approve_wildcards=False,
+        policy_format=flags.get("policy_format", "full")
     )
 
     assert DeepDiff(actual_policy_spec, expected_policy_spec, ignore_order=True) == {}, (

@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from typing import Optional
 from typing_extensions import Literal
 
+from azext_confcom import config
+
 
 AciProfile = Literal["strict", "debug"]
 
@@ -53,7 +55,7 @@ class AciContainerPropertySecurityContext:
 
 
 @dataclass
-class AciContainerProperties():
+class AciContainerProperties:
     image: str
     allowStdioAccess: bool = True
     environmentVariables: Optional[list[AciContainerPropertyEnvVariable]] = None

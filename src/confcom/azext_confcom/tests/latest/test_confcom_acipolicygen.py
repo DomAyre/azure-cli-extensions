@@ -82,7 +82,13 @@ def test_acipolicygen_arm(sample_directory, generated_policy_path):
 
 @pytest.mark.parametrize(
     "policy_spec_path",
-    [str(path.relative_to(SAMPLES_ROOT)) for path in Path(SAMPLES_ROOT).rglob("policy_spec*")]
+    [
+        str(path.relative_to(SAMPLES_ROOT))
+        for path in Path(SAMPLES_ROOT).rglob("policy_spec*")
+        if path.parts[-1] not in {
+            "policy_spec_minimal.json",  # This is equivalent to policy_spec.json
+        }
+    ]
 )
 def test_acipolicygen_spec(policy_spec_path):
 

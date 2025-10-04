@@ -93,6 +93,13 @@ def load_arguments(self, _):
             required=False,
             help="Approving wildcards by default will get rid of the prompts during the wildcard environment variable use case and auto-approve the use of wildcards",
         )
+        c.argument(
+            "policy_format",
+            options_list=("--format",),
+            default="explicit",
+            required=False,
+            help="The format for the policy output, explicit includes all objects which can be implicitly added, minimal includes only the essential fields",
+        )
 
     with self.argument_context("confcom acipolicygen") as c:
         c.argument(
