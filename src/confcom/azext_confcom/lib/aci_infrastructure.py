@@ -1,7 +1,7 @@
 
 
 
-from dataclasses import is_dataclass, replace
+from dataclasses import fields, is_dataclass, replace
 from azext_confcom import config
 from azext_confcom.lib.aci_policy_spec import AciContainerPropertyEnvVariable, AciContainerPropertyVolumeMounts, AciFragmentSpec
 

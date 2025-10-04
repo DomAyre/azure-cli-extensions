@@ -5,6 +5,7 @@ import sys
 from typing import Optional
 from azext_confcom import os_util
 from azext_confcom.lib.aci_infrastructure import omit_implicit_features
+from azext_confcom.lib.aci_policy_spec import POLICY_SPEC_CLASSES
 from azext_confcom.lib.arm_to_aci_policy_spec import arm_to_aci_policy_spec
 
 
@@ -12,13 +13,7 @@ def omit_defaults_dict_factory(fields_dict) -> dict:
 
     result = {}
 
-    policy_spec_classes = [
-        cls
-        for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass)
-        if is_dataclass(cls) and cls.__module__ == sys.modules[__name__].__name__
-    ]
-
-    for potential_class in policy_spec_classes:
+    for potential_class in POLICY_SPEC_CLASSES:
         try:
             instance = potential_class(**dict(fields_dict))
             for field in fields(instance):
@@ -63,8 +58,10 @@ def parse_aci_arm(
 
     specs = []
     for spec in aci_policy_specs:
+        print(f"{spec=}")
         if policy_format == "minimal":
             spec = omit_implicit_features(spec)
+        print(f"{spec=}")
         specs.append(asdict(spec, dict_factory=omit_defaults_dict_factory))
 
     return specs

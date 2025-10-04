@@ -92,3 +92,9 @@ class AciPolicySpec:
     infrastructure_fragment_min_svn: Optional[str] = None
     allow_stdio_access: bool = True
 
+
+POLICY_SPEC_CLASSES = [
+    cls
+    for _, cls in inspect.getmembers(sys.modules[__name__], inspect.isclass)
+    if is_dataclass(cls) and cls.__module__ == sys.modules[__name__].__name__
+]
