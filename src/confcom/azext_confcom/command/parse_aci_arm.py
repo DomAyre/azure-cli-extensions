@@ -4,7 +4,7 @@ import inspect
 import sys
 from typing import Optional
 from azext_confcom import os_util
-from azext_confcom.lib.aci_policy_spec import omit_defaults_dict_factory, omit_implicit_features
+from azext_confcom.lib.aci_infrastructure import omit_implicit_features
 from azext_confcom.lib.arm_to_aci_policy_spec import arm_to_aci_policy_spec
 
 
