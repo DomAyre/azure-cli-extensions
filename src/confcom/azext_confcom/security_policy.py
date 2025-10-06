@@ -497,12 +497,12 @@ class AciPolicy:  # pylint: disable=too-many-instance-attributes
                         for env_var in image.get_environment_rules()
                     ]
 
-                    for env in envs:
+                    for idx, env in enumerate(envs):
                         name, value = env.split("=", 1)
                         # when user set environment variables conflict with the ones read from image, always
                         # keep user set environment variables
                         if name not in env_names:
-                            image.get_environment_rules().append(
+                            image.get_environment_rules().insert(idx,
                                 {
                                     config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS_RULE: f"{name}={value}",
                                     config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS_STRATEGY: "string",

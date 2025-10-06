@@ -81,6 +81,10 @@ def arm_container_env_to_aci_policy_spec_env(
 
     for env_var in [
         *process_env_vars_from_template(parameters, {}, container_properties, approve_wildcards),
+        *config.OPENGCS_ENV_RULES,
+        *config.FABRIC_ENV_RULES,
+        *config.MANAGED_IDENTITY_ENV_RULES,
+        *config.ENABLE_RESTART_ENV_RULE,
     ]:
         yield AciContainerPropertyEnvVariable(
             # At time of writing, we only get env vars from process_env_vars_from_template

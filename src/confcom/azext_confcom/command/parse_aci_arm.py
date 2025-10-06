@@ -56,10 +56,8 @@ def parse_aci_arm(
 
     specs = []
     for spec in aci_policy_specs:
-        print(f"{spec=}")
         if policy_format == "minimal":
             spec = omit_implicit_features(spec)
-        print(f"{spec=}")
         specs.append(asdict(spec, dict_factory=omit_defaults_dict_factory))
 
     return specs
