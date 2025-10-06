@@ -705,21 +705,31 @@ class ContainerImage:
             var[config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS_RULE].split("=")[0]
             for var in out_rules
         ]
+
+        # Remove variables from out_rules which appear in extraEnvironmentRules
+        # so they're always at the end of the list. This is to maintain the
+        # arbitrary order that already exists to avoid breaking customers
+        out_rules = [
+            rule for rule in out_rules
+            if rule["pattern"] not in {
+                f"{r["name"]}={r["value"]}" for r in self._extraEnvironmentRules
+            }
+        ]
+
         for rule in self._extraEnvironmentRules:
-            if rule[config.ACI_FIELD_CONTAINERS_ENVS_NAME] not in env_var_names:
-                out_rules.append(
-                    {
-                        config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS_RULE:
-                        f"{rule[config.ACI_FIELD_CONTAINERS_ENVS_NAME]}="
-                        + f"{rule[config.ACI_FIELD_CONTAINERS_ENVS_VALUE]}",
-                        config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS_STRATEGY: rule[
-                            config.ACI_FIELD_CONTAINERS_ENVS_STRATEGY
-                        ],
-                        config.POLICY_FIELD_CONTAINERS_ELEMENTS_REQUIRED: rule[
-                            config.ACI_FIELD_CONTAINERS_ENVS_REQUIRED
-                        ],
-                    }
-                )
+            out_rules.append(
+                {
+                    config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS_RULE:
+                    f"{rule[config.ACI_FIELD_CONTAINERS_ENVS_NAME]}="
+                    + f"{rule[config.ACI_FIELD_CONTAINERS_ENVS_VALUE]}",
+                    config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS_STRATEGY: rule[
+                        config.ACI_FIELD_CONTAINERS_ENVS_STRATEGY
+                    ],
+                    config.POLICY_FIELD_CONTAINERS_ELEMENTS_REQUIRED: rule.get(
+                        config.ACI_FIELD_CONTAINERS_ENVS_REQUIRED, False
+                    ),
+                }
+            )
 
         return out_rules
 
