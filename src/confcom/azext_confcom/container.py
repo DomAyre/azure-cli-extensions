@@ -701,10 +701,6 @@ class ContainerImage:
 
     def _get_environment_rules(self) -> List[Dict[str, Any]]:
         out_rules = copy.deepcopy(self._environmentRules)
-        env_var_names = [
-            var[config.POLICY_FIELD_CONTAINERS_ELEMENTS_ENVS_RULE].split("=")[0]
-            for var in out_rules
-        ]
 
         # Remove variables from out_rules which appear in extraEnvironmentRules
         # so they're always at the end of the list. This is to maintain the

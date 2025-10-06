@@ -491,6 +491,7 @@ def get_fragment_output_type(outraw):
         output_type = security_policy.OutputType.RAW
     return output_type
 
+
 # This should be *args, **kwargs to avoid having to touch this, however the az
 # extension frameworks then expects literal args and kwargs parameters.
 def parse_aci_arm(

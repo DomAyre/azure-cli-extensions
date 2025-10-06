@@ -11,7 +11,6 @@ from enum import Enum, auto
 from typing import Any, Dict, List, Tuple, Union
 from dataclasses import asdict
 
-from azext_confcom.lib.aci_policy_spec import AciFragmentSpec
 from azext_confcom.lib.arm_to_aci_policy_spec import arm_to_aci_policy_spec
 from azext_confcom import (config, os_util)
 from azext_confcom.container import ContainerImage, UserContainerImage
@@ -738,6 +737,7 @@ def load_policy_from_json_file(
     )
 
 
+# pylint: disable=too-many-branches
 def load_policy_from_json(
     data: str,
     debug_mode: bool = False,
