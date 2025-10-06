@@ -3,11 +3,11 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-from dataclasses import dataclass
+from dataclasses import dataclass, is_dataclass
+import inspect
+import sys
 from typing import Optional
 from typing_extensions import Literal
-
-from azext_confcom import config
 
 
 AciProfile = Literal["strict", "debug"]
