@@ -215,6 +215,8 @@ def arm_container_group_to_aci_policy_spec(
             "minimum_svn": infrastructure_fragment_min_svn or min_svn,
         }
 
+    include_infrastructure_fragment = not container_group.get("tags", {}).get("Annotate-zero-sidecar", not include_infrastructure_fragment)
+
     return AciPolicySpec(
         fragments=[
             *arm_container_group_to_aci_policy_spec_fragments(container_group),
@@ -235,7 +237,7 @@ def arm_container_group_to_aci_policy_spec(
             for c in containers + container_group.get("properties", {}).get("initContainers", [])
         ],
         profile="debug" if debug_mode else "strict",
-        include_infrastructure_fragment=not container_group.get("tags", {}).get("Annotate-zero-sidecar", not include_infrastructure_fragment),
+        include_infrastructure_fragment=include_infrastructure_fragment,
         allow_stdio_access=allow_stdio_access,
     )
 
