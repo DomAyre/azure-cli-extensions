@@ -3,9 +3,13 @@
 Release History
 ===============
 
-1.2.8
+1.3.2
 ++++++
-* Made the default minimum SVN of the infrastructure fragment 4
+* Define a clear specification for acipolicygen input and use this when parsing ARM templates
+
+1.3.0
+++++++
+* Add a new --enable-stdio flag, with a warning if neither this or --disable-stdio is set
 
 1.2.7
 ++++++

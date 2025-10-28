@@ -9,6 +9,7 @@ import sys
 from typing import Optional
 
 from azext_confcom import oras_proxy, os_util, security_policy
+from azext_confcom._validators import resolve_stdio
 from azext_confcom.config import (
     DEFAULT_REGO_FRAGMENTS, POLICY_FIELD_CONTAINERS_ELEMENTS_REGO_FRAGMENTS,
     REGO_IMPORT_FILE_STRUCTURE)
@@ -46,7 +47,8 @@ def acipolicygen_confcom(
     save_to_file: str = None,
     debug_mode: bool = False,
     print_policy_to_terminal: bool = False,
-    disable_stdio: bool = False,
+    disable_stdio: Optional[bool] = None,
+    enable_stdio: Optional[bool] = None,
     print_existing_policy: bool = False,
     faster_hashing: bool = False,
     omit_id: bool = False,
@@ -63,6 +65,8 @@ def acipolicygen_confcom(
             "source control. Also verify that no secrets are present in the logs of your command or script.",
             "For additional information, see http://aka.ms/clisecrets. \n",
         )
+
+    stdio_enabled = resolve_stdio(enable_stdio, disable_stdio)
 
     if print_existing_policy and arm_template:
         print_existing_policy_from_arm_template(arm_template, arm_template_parameters)
@@ -115,7 +119,7 @@ def acipolicygen_confcom(
             input_path,
             debug_mode=debug_mode,
             infrastructure_svn=infrastructure_svn,
-            disable_stdio=disable_stdio,
+            disable_stdio=(not stdio_enabled),
             exclude_default_fragments=exclude_default_fragments,
         )
     elif arm_template:
@@ -124,20 +128,20 @@ def acipolicygen_confcom(
             arm_template,
             arm_template_parameters,
             debug_mode=debug_mode,
-            disable_stdio=disable_stdio,
+            disable_stdio=(not stdio_enabled),
             approve_wildcards=approve_wildcards,
             included_fragments=fragments_list,
             exclude_default_fragments=exclude_default_fragments,
         )
     elif image_name:
         container_group_policies = security_policy.load_policy_from_image_name(
-            image_name, debug_mode=debug_mode, disable_stdio=disable_stdio
+            image_name, debug_mode=debug_mode, disable_stdio=(not stdio_enabled)
         )
     elif virtual_node_yaml_path:
         container_group_policies = security_policy.load_policy_from_virtual_node_yaml_file(
             virtual_node_yaml_path=virtual_node_yaml_path,
             debug_mode=debug_mode,
-            disable_stdio=disable_stdio,
+            disable_stdio=(not stdio_enabled),
             approve_wildcards=approve_wildcards,
             diff_mode=diff,
             rego_imports=fragments_list,
@@ -245,7 +249,8 @@ def acifragmentgen_confcom(
     fragment_path: str = None,
     omit_id: bool = False,
     generate_import: bool = False,
-    disable_stdio: bool = False,
+    disable_stdio: Optional[bool] = None,
+    enable_stdio: Optional[bool] = None,
     debug_mode: bool = False,
     output_filename: str = "",
     outraw: bool = False,
@@ -253,6 +258,9 @@ def acifragmentgen_confcom(
     no_print: bool = False,
     fragments_json: str = "",
 ):
+
+    stdio_enabled = resolve_stdio(enable_stdio, disable_stdio)
+
     output_type = get_fragment_output_type(outraw)
 
     if generate_import:
@@ -306,15 +314,15 @@ def acifragmentgen_confcom(
 
     if image_name:
         policy = security_policy.load_policy_from_image_name(
-            image_name, debug_mode=debug_mode, disable_stdio=disable_stdio
+            image_name, debug_mode=debug_mode, disable_stdio=(not stdio_enabled)
         )
     else:
         # this is using --input
         if not tar_mapping:
             tar_mapping = os_util.load_tar_mapping_from_config_file(input_path)
         policy = security_policy.load_policy_from_json_file(
-            input_path, debug_mode=debug_mode, disable_stdio=disable_stdio
-        )[0]
+            input_path, debug_mode=debug_mode, disable_stdio=(not stdio_enabled)
+        )
     # get all of the fragments that are being used in the policy
     # and associate them with each container group
     fragment_policy_list = []
