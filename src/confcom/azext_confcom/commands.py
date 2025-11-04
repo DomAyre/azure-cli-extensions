@@ -11,5 +11,24 @@ def load_command_table(self, _):
         g.custom_command("acifragmentgen", "acifragmentgen_confcom")
         g.custom_command("katapolicygen", "katapolicygen_confcom")
 
+    with self.command_group("confcom policy") as g:
+        g.custom_command("create", "policy_create")
+
+    with self.command_group("confcom policy containers") as g:
+        g.custom_command("add", "policy_containers_add")
+
+    with self.command_group("confcom policy containers set") as g:
+        g.custom_command("layers", "policy_containers_set_layers")
+
+    with self.command_group("confcom policy fragments") as g:
+        g.custom_command("add", "policy_fragments_add")
+
+    with self.command_group("confcom container") as g:
+        g.custom_command("pause", "container_pause")
+        g.custom_command("from_image", "container_from_image")
+
+    with self.command_group("confcom fragment") as g:
+        g.custom_command("aci", "fragment_aci")
+
     with self.command_group("confcom"):
         pass

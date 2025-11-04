@@ -5,7 +5,7 @@
 
 import os
 import sys
-from typing import Optional
+from typing import BinaryIO, Optional
 
 from azext_confcom import oras_proxy, os_util, security_policy
 from azext_confcom._validators import resolve_stdio
@@ -22,6 +22,13 @@ from azext_confcom.template_util import (
     get_image_name, inject_policy_into_template, inject_policy_into_yaml,
     pretty_print_func, print_existing_policy_from_arm_template,
     print_existing_policy_from_yaml, print_func, str_to_sha256)
+from azext_confcom.command.policy_create import policy_create as _policy_create
+from azext_confcom.command.policy_containers_add import policy_containers_add as _policy_containers_add
+from azext_confcom.command.container_pause import container_pause as _container_pause
+from azext_confcom.command.container_from_image import container_from_image as _container_from_image
+from azext_confcom.command.fragment_aci import fragment_aci as _fragment_aci
+from azext_confcom.command.policy_fragments_add import policy_fragments_add as _policy_fragments_add
+from azext_confcom.command.policy_containers_set_layers import policy_containers_set_layers as _policy_containers_set_layers
 from knack.log import get_logger
 from pkg_resources import parse_version
 
@@ -481,3 +488,55 @@ def get_fragment_output_type(outraw):
     if outraw:
         output_type = security_policy.OutputType.RAW
     return output_type
+
+
+def policy_create() -> None:
+    print(_policy_create())
+
+
+def policy_containers_add(
+    policy_file: BinaryIO,
+    container: dict
+) -> None:
+    print(_policy_containers_add(
+        policy_file=policy_file,
+        container=container,
+    ))
+
+
+def container_pause() -> None:
+    print(_container_pause())
+
+
+def container_from_image(
+    image: str
+) -> None:
+    print(_container_from_image(
+        image=image,
+    ))
+
+
+def fragment_aci() -> None:
+    print(_fragment_aci())
+
+
+def policy_fragments_add(
+    policy_file: BinaryIO,
+    fragment: dict
+) -> None:
+    print(_policy_fragments_add(
+        policy_file=policy_file,
+        fragment=fragment,
+    ))
+
+
+def policy_containers_set_layers(
+    policy_file: BinaryIO,
+    container_id: str,
+    image: Optional[str] = None,
+) -> None:
+    print(_policy_containers_set_layers(
+        policy_file=policy_file,
+        container_id=container_id,
+        image=image,
+    ))
