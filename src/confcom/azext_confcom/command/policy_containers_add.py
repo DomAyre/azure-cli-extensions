@@ -18,7 +18,11 @@ def policy_containers_add(policy_file: BinaryIO, container) -> str:
     else:
         policy = policy_deserialize(policy_file.name)
 
-    policy.containers.append(Container(**container))
+
+    if not isinstance(container, list):
+        container = [container]
+
+    policy.containers.extend(Container(**c) for c in container)
     return policy_serialize(policy)
 
 

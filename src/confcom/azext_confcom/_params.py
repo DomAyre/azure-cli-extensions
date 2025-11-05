@@ -473,7 +473,7 @@ def load_arguments(self, _):
             help="Fragment definition to add"
         )
 
-    with self.argument_context("confcom container from_image") as c:
+    with self.argument_context("confcom containers from_image") as c:
         c.positional(
             "image",
             type=str,

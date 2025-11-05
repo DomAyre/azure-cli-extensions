@@ -24,8 +24,8 @@ from azext_confcom.template_util import (
     print_existing_policy_from_yaml, print_func, str_to_sha256)
 from azext_confcom.command.policy_create import policy_create as _policy_create
 from azext_confcom.command.policy_containers_add import policy_containers_add as _policy_containers_add
-from azext_confcom.command.container_pause import container_pause as _container_pause
-from azext_confcom.command.container_from_image import container_from_image as _container_from_image
+from azext_confcom.command.containers_pause import containers_pause as _containers_pause
+from azext_confcom.command.containers_from_image import containers_from_image as _containers_from_image
 from azext_confcom.command.fragment_aci import fragment_aci as _fragment_aci
 from azext_confcom.command.policy_fragments_add import policy_fragments_add as _policy_fragments_add
 from azext_confcom.command.policy_containers_set_layers import policy_containers_set_layers as _policy_containers_set_layers
@@ -504,14 +504,14 @@ def policy_containers_add(
     ))
 
 
-def container_pause() -> None:
-    print(_container_pause())
+def containers_pause() -> None:
+    print(_containers_pause())
 
 
-def container_from_image(
+def containers_from_image(
     image: str
 ) -> None:
-    print(_container_from_image(
+    print(_containers_from_image(
         image=image,
     ))
 
