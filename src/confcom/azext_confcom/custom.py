@@ -26,6 +26,7 @@ from azext_confcom.command.policy_create import policy_create as _policy_create
 from azext_confcom.command.policy_containers_add import policy_containers_add as _policy_containers_add
 from azext_confcom.command.containers_pause import containers_pause as _containers_pause
 from azext_confcom.command.containers_from_image import containers_from_image as _containers_from_image
+from azext_confcom.command.containers_from_aci import containers_from_aci as _containers_from_aci
 from azext_confcom.command.fragment_aci import fragment_aci as _fragment_aci
 from azext_confcom.command.policy_fragments_add import policy_fragments_add as _policy_fragments_add
 from azext_confcom.command.policy_containers_set_layers import policy_containers_set_layers as _policy_containers_set_layers
@@ -509,10 +510,12 @@ def containers_pause() -> None:
 
 
 def containers_from_image(
-    image: str
+    image: str,
+    platform: str,
 ) -> None:
     print(_containers_from_image(
         image=image,
+        platform=platform,
     ))
 
 
@@ -539,4 +542,18 @@ def policy_containers_set_layers(
         policy_file=policy_file,
         container_id=container_id,
         image=image,
+    ))
+
+
+def containers_from_aci(
+    cmd,
+    template: str,
+    parameters: dict,
+    group_index: int,
+) -> None:
+    print(_containers_from_aci(
+        az_cli_command=cmd,
+        template=template,
+        parameters=parameters,
+        group_index=group_index,
     ))

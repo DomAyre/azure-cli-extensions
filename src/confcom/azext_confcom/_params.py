@@ -8,6 +8,7 @@ import argparse
 import json
 import sys
 from knack.arguments import CLIArgumentType
+from argcomplete.completers import FilesCompleter
 from azext_confcom._validators import (
     validate_params_file,
     validate_diff,
@@ -30,6 +31,7 @@ from azext_confcom._validators import (
     validate_upload_fragment,
     validate_infrastructure_svn,
 )
+
 
 
 def load_arguments(self, _):
@@ -478,4 +480,36 @@ def load_arguments(self, _):
             "image",
             type=str,
             help="Image to create container definition from",
+        )
+        c.argument(
+            "platform",
+            options_list=("--platform",),
+            required=False,
+            default="aci",
+            type=str,
+            help="Platform to create container definition for",
+        )
+
+    with self.argument_context("confcom containers from_aci") as c:
+        c.positional(
+            "template",
+            type=str,
+            help="Template to create container definitions from",
+        )
+        c.argument(
+            "parameters",
+            options_list=['--parameters', '-p'],
+            action='append',
+            nargs='+',
+            completer=FilesCompleter(),
+            required=False,
+            default=[],
+            help='The parameters for the ARM template'
+        )
+        c.argument(
+            "group_index",
+            options_list=['--idx'],
+            required=False,
+            default=0,
+            help='The index of the container group in the template to use'
         )

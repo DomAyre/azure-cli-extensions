@@ -56,9 +56,9 @@ class ContainerMount:
 
 @dataclass
 class ContainerUser:
-    group_idnames: list[ContainerRule] = field(default_factory=list)
+    group_idnames: list[ContainerRule] = field(default_factory=lambda: [ContainerRule(pattern="", strategy="any")])
     umask: str = "0022"
-    user_idnames: list[ContainerRule] = field(default_factory=list)
+    user_idname: ContainerRule = field(default_factory=lambda: ContainerRule(pattern="", strategy="any"))
 
 
 @dataclass
