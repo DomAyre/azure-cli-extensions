@@ -1,8 +1,9 @@
 
 import json
+from typing import Optional
 
 
-def fragment_aci() -> str:
+def fragments_aci() -> str:
     return json.dumps({
         "feed": "mcr.microsoft.com/aci/aci-cc-infra-fragment",
         "includes": [

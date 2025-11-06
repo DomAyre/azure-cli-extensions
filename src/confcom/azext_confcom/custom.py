@@ -27,9 +27,10 @@ from azext_confcom.command.policy_containers_add import policy_containers_add as
 from azext_confcom.command.containers_pause import containers_pause as _containers_pause
 from azext_confcom.command.containers_from_image import containers_from_image as _containers_from_image
 from azext_confcom.command.containers_from_aci import containers_from_aci as _containers_from_aci
-from azext_confcom.command.fragment_aci import fragment_aci as _fragment_aci
+from azext_confcom.command.fragments_aci import fragments_aci as _fragments_aci
 from azext_confcom.command.policy_fragments_add import policy_fragments_add as _policy_fragments_add
 from azext_confcom.command.policy_containers_set_layers import policy_containers_set_layers as _policy_containers_set_layers
+from azext_confcom.command.aci_policy_insert import aci_policy_insert as _aci_policy_insert
 from knack.log import get_logger
 from pkg_resources import parse_version
 
@@ -497,11 +498,13 @@ def policy_create() -> None:
 
 def policy_containers_add(
     policy_file: BinaryIO,
-    container: dict
+    container: dict,
+    in_place: bool,
 ) -> None:
     print(_policy_containers_add(
         policy_file=policy_file,
         container=container,
+        in_place=in_place,
     ))
 
 
@@ -519,29 +522,35 @@ def containers_from_image(
     ))
 
 
-def fragment_aci() -> None:
-    print(_fragment_aci())
+def fragments_aci(
+) -> None:
+    print(_fragments_aci(
+    ))
 
 
 def policy_fragments_add(
     policy_file: BinaryIO,
-    fragment: dict
+    fragment_json: dict,
+    in_place: bool,
 ) -> None:
     print(_policy_fragments_add(
         policy_file=policy_file,
-        fragment=fragment,
+        fragment_json=fragment_json,
+        in_place=in_place,
     ))
 
 
 def policy_containers_set_layers(
     policy_file: BinaryIO,
     container_id: str,
-    image: Optional[str] = None,
+    image: Optional[str],
+    in_place: bool,
 ) -> None:
     print(_policy_containers_set_layers(
         policy_file=policy_file,
         container_id=container_id,
         image=image,
+        in_place=in_place,
     ))
 
 
@@ -557,3 +566,13 @@ def containers_from_aci(
         parameters=parameters,
         group_index=group_index,
     ))
+
+
+def aci_policy_insert(
+    policy_file: BinaryIO,
+    template_path: str,
+) -> None:
+    _aci_policy_insert(
+        policy_file=policy_file,
+        template_path=template_path,
+    )

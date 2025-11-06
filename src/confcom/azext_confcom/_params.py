@@ -7,6 +7,7 @@
 import argparse
 import json
 import sys
+from typing import Optional
 from knack.arguments import CLIArgumentType
 from argcomplete.completers import FilesCompleter
 from azext_confcom._validators import (
@@ -423,6 +424,15 @@ def load_arguments(self, _):
             validator=validate_katapolicygen_input,
         )
 
+    with self.argument_context("confcom policy create") as c:
+        c.argument(
+            "package_name",
+            options_list=("--package"),
+            required=False,
+            default=None,
+            help="Package name to use for the policy"
+        )
+
     with self.argument_context("confcom policy containers add") as c:
         c.positional(
             "policy_file",
@@ -438,6 +448,14 @@ def load_arguments(self, _):
             required=False,
             help="Container definition to add"
         )
+        c.argument(
+            "in_place",
+            options_list=("--in-place", "-i"),
+            action="store_true",
+            required=False,
+            default=False,
+            help="Edit the input file in place instead of outputting to stdout"
+        )
 
     with self.argument_context("confcom policy containers set layers") as c:
         c.positional(
@@ -449,7 +467,7 @@ def load_arguments(self, _):
         )
         c.argument(
             "container_id",
-            options_list=("--id", "-i"),
+            options_list=("--id"),
             help="Container ID to set layers for"
         )
         c.argument(
@@ -457,6 +475,14 @@ def load_arguments(self, _):
             options_list=("--image"),
             default=None,
             help="Image to get the layers of"
+        )
+        c.argument(
+            "in_place",
+            options_list=("--in-place", "-i"),
+            action="store_true",
+            required=False,
+            default=False,
+            help="Edit the input file in place instead of outputting to stdout"
         )
 
     with self.argument_context("confcom policy fragments add") as c:
@@ -468,11 +494,19 @@ def load_arguments(self, _):
             help="Policy to add the container to",
         )
         c.argument(
-            "fragment",
+            "fragment_json",
             options_list=("--fragment", "-f"),
             type=json.loads,
             required=False,
             help="Fragment definition to add"
+        )
+        c.argument(
+            "in_place",
+            options_list=("--in-place", "-i"),
+            action="store_true",
+            required=False,
+            default=False,
+            help="Edit the input file in place instead of outputting to stdout"
         )
 
     with self.argument_context("confcom containers from_image") as c:
@@ -512,4 +546,19 @@ def load_arguments(self, _):
             required=False,
             default=0,
             help='The index of the container group in the template to use'
+        )
+
+    with self.argument_context("confcom aci policy insert") as c:
+        c.positional(
+            "policy_file",
+            nargs='?',
+            type=argparse.FileType('rb'),
+            default=sys.stdin.buffer,
+            help="Policy to add the container to",
+        )
+        c.argument(
+            "template_path",
+            options_list=("--template_file", '-f'),
+            required=False,
+            help="Path to the template file"
         )

@@ -28,8 +28,11 @@ def load_command_table(self, _):
         g.custom_command("from_image", "containers_from_image")
         g.custom_command("from_aci", "containers_from_aci")
 
-    with self.command_group("confcom fragment") as g:
-        g.custom_command("aci", "fragment_aci")
+    with self.command_group("confcom fragments") as g:
+        g.custom_command("aci", "fragments_aci")
+
+    with self.command_group("confcom aci policy") as g:
+        g.custom_command("insert", "aci_policy_insert")
 
     with self.command_group("confcom"):
         pass

@@ -2,15 +2,20 @@
 
 
 import tempfile
-from typing import BinaryIO
+from typing import BinaryIO, Optional
 from azext_confcom.lib.serialization import policy_deserialize, policy_serialize
 from azext_confcom.lib.policy import Fragment, Policy, Container
 
 
-def policy_fragments_add(policy_file: BinaryIO, fragment) -> str:
+def policy_fragments_add(
+    policy_file: BinaryIO,
+    fragment_json: dict,
+    in_place: bool,
+) -> str:
 
     policy = None
     if policy_file.name == "<stdin>":
+        assert not in_place
         with tempfile.NamedTemporaryFile(delete=True) as temp_policy_file:
             temp_policy_file.write(policy_file.read())
             temp_policy_file.flush()
@@ -18,9 +23,13 @@ def policy_fragments_add(policy_file: BinaryIO, fragment) -> str:
     else:
         policy = policy_deserialize(policy_file.name)
 
-    policy.fragments.append(Fragment(**fragment))
-    return policy_serialize(policy)
+    fragment = Fragment(**fragment_json)
 
+    policy.fragments.append(fragment)
+    serialized_policy = policy_serialize(policy)
 
-if __name__ == "__main__":
-    print(policy_fragments_add())
+    if in_place:
+        with open(policy_file.name, "w") as f:
+            f.write(serialized_policy)
+
+    return serialized_policy

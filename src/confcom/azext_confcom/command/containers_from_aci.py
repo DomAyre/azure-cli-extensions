@@ -99,7 +99,7 @@ def aci_container_to_policy(
                 "pattern": f"{env.get('name')}={env.get('value')}",
                 "strategy": "string",
                 "required": False,
-            } for env in properties.get("environmentVariables")]
+            } for env in properties.get("environmentVariables", [])]
         ),
         "mounts": ACI_MOUNTS,
     }
