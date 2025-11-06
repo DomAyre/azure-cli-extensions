@@ -545,6 +545,7 @@ def load_arguments(self, _):
             options_list=['--idx'],
             required=False,
             default=0,
+            type=int,
             help='The index of the container group in the template to use'
         )
 
