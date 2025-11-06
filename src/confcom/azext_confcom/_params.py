@@ -549,6 +549,31 @@ def load_arguments(self, _):
             help='The index of the container group in the template to use'
         )
 
+    with self.argument_context("confcom containers from_radius") as c:
+        c.positional(
+            "template",
+            type=str,
+            help="Template to create container definitions from",
+        )
+        c.argument(
+            "parameters",
+            options_list=['--parameters', '-p'],
+            action='append',
+            nargs='+',
+            completer=FilesCompleter(),
+            required=False,
+            default=[],
+            help='The parameters for the radius template'
+        )
+        c.argument(
+            "container_index",
+            options_list=['--idx'],
+            required=False,
+            default=0,
+            type=int,
+            help='The index of the container definition in the template to use'
+        )
+
     with self.argument_context("confcom aci policy insert") as c:
         c.positional(
             "policy_file",

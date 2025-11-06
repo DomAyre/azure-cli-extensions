@@ -27,6 +27,7 @@ from azext_confcom.command.policy_containers_add import policy_containers_add as
 from azext_confcom.command.containers_pause import containers_pause as _containers_pause
 from azext_confcom.command.containers_from_image import containers_from_image as _containers_from_image
 from azext_confcom.command.containers_from_aci import containers_from_aci as _containers_from_aci
+from azext_confcom.command.containers_from_radius import containers_from_radius as _containers_from_radius
 from azext_confcom.command.fragments_aci import fragments_aci as _fragments_aci
 from azext_confcom.command.policy_fragments_add import policy_fragments_add as _policy_fragments_add
 from azext_confcom.command.policy_containers_set_layers import policy_containers_set_layers as _policy_containers_set_layers
@@ -565,6 +566,20 @@ def containers_from_aci(
         template=template,
         parameters=parameters,
         group_index=group_index,
+    ))
+
+
+def containers_from_radius(
+    cmd,
+    template: str,
+    parameters: dict,
+    container_index: int,
+) -> None:
+    print(_containers_from_radius(
+        az_cli_command=cmd,
+        template=template,
+        parameters=parameters,
+        container_index=container_index,
     ))
 
 

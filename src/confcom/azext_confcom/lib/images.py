@@ -1,12 +1,27 @@
+import functools
 import os
 import subprocess
 import docker
+
+@functools.lru_cache()
+def get_image(image_ref: str) -> docker.models.images.Image:
+
+    client = docker.from_env()
+
+    try:
+        image = client.images.get(image_ref)
+    except docker.errors.ImageNotFound:
+        client.images.pull(image_ref)
+
+    image = client.images.get(image_ref)
+    return image
 
 
 def get_image_layers(image: str) -> list[str]:
 
     binary_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "bin", "dmverity-vhd")
 
+    get_image(image)
     result = subprocess.run(
         [binary_path, "-d", "roothash", "-i", image],
         stdout=subprocess.PIPE,
@@ -19,9 +34,7 @@ def get_image_layers(image: str) -> list[str]:
 
 def get_image_config(image: str) -> dict:
 
-    client = docker.from_env()
-    raw_image = client.images.get(image)
-    image_config = raw_image.attrs.get("Config")
+    image_config = get_image(image).attrs.get("Config")
 
     config = {}
 

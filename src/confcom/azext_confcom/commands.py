@@ -27,6 +27,7 @@ def load_command_table(self, _):
         g.custom_command("pause", "containers_pause")
         g.custom_command("from_image", "containers_from_image")
         g.custom_command("from_aci", "containers_from_aci")
+        g.custom_command("from_radius", "containers_from_radius")
 
     with self.command_group("confcom fragments") as g:
         g.custom_command("aci", "fragments_aci")
