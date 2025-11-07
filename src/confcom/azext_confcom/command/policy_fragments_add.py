@@ -4,7 +4,7 @@
 import tempfile
 from typing import BinaryIO, Optional
 from azext_confcom.lib.serialization import policy_deserialize, policy_serialize
-from azext_confcom.lib.policy import Fragment, Policy, Container
+from azext_confcom.lib.policy import FragmentReference, Policy, Container
 
 
 def policy_fragments_add(
@@ -23,7 +23,7 @@ def policy_fragments_add(
     else:
         policy = policy_deserialize(policy_file.name)
 
-    fragment = Fragment(**fragment_json)
+    fragment = FragmentReference(**fragment_json)
 
     policy.fragments.append(fragment)
     serialized_policy = policy_serialize(policy)

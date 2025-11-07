@@ -62,7 +62,7 @@ class ContainerUser:
 
 
 @dataclass
-class Fragment:
+class FragmentReference:
     feed: str
     issuer: str
     minimum_svn: str
@@ -94,7 +94,7 @@ class Policy:
     package: str = "policy"
     api_version: str = "0.10.0"
     framework_version: str = "0.2.3"
-    fragments: list[Fragment] = field(default_factory=list)
+    fragments: list[FragmentReference] = field(default_factory=list)
     containers: list[Container] = field(default_factory=list)
     allow_properties_access: bool = True
     allow_dump_stacks: bool = False
@@ -102,6 +102,15 @@ class Policy:
     allow_environment_variable_dropping: bool = True
     allow_unencrypted_scratch: bool = False
     allow_capability_dropping: bool = True
+
+
+@dataclass
+class Fragment:
+    package: str = "fragment"
+    svn: str = "0"
+    framework_version: str = "0.2.3"
+    fragments: list[FragmentReference] = field(default_factory=list)
+    containers: list[Container] = field(default_factory=list)
 
 
 POLICY_CLASSES = [
