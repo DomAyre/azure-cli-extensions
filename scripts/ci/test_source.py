@@ -86,12 +86,19 @@ def test_extension(whl_dir: Optional[Path] = None):
 
         run_command(test_args, check_return_code=True)
         logger.info(f'uninstalling extension: {ext_name}')
-        cmd = ['azdev', 'extension', 'remove', ext_name]
-        run_command(cmd, check_return_code=True)
+        run(
+            ['azdev', 'extension', 'remove', ext_name],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        run(
+            ['az', 'extension', 'remove', '-n', ext_name],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
 
-        # This catches code missing in the final wheel package, but until the full
-        # set of extension tests can be run against the wheel, it will not catch
-        # missing files required at runtime.
         if whl_dir is not None:
             logger.info(f'installing extension wheel: {ext_name}')
             wheel_path = next(whl_dir.glob(f"{ext_name}*.whl"), None)
@@ -100,11 +107,20 @@ def test_extension(whl_dir: Optional[Path] = None):
                 ["az", "extension", "add", "-y", "-s", wheel_path],
                 check=True,
             )
+            # TOOD: Check metadata for the wheel to see if it can run tests on wheel or not
             subprocess.run(
-                ["az", ext_name, "--help"],
+                [
+                    "pytest",
+                    "--pyargs",
+                    f"{pkg_name}.tests.latest",
+                    "--forked",
+                    "-v",
+                ],
                 check=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
+                env={
+                    **os.environ,
+                    "PYTHONPATH": Path.home().joinpath(".azure", "cliextensions", ext_name).as_posix(),\
+                },
             )
             subprocess.run(
                 ["az", "extension", "remove", "-n", ext_name],
