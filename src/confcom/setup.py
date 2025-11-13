@@ -74,7 +74,8 @@ setup(
             "bin/genpolicy-linux",  # linux for AKS
             "bin/sign1util.exe",  # windows for cose tool
             "bin/sign1util",  # linux for cose tool
-            "data/*",
+            "data/**/*",
         ]
     },
+    az_ext_test_wheel=True,
 )

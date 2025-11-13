@@ -2,7 +2,7 @@
   "fragments": [
     {
       "feed": "mcr.microsoft.com/acc/samples/aci/helloworld",
-      "path": "./samples/fragments/fragment.rego.cose",
+      "path": "./data/samples/fragments/fragment.rego.cose",
       "includes": [
         "containers",
         "fragments"

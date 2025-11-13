@@ -17,10 +17,10 @@ from azext_confcom.custom import acipolicygen_confcom
 
 
 TEST_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), ".."))
-CONFCOM_DIR = os.path.abspath(os.path.join(TEST_DIR, "..", "..", ".."))
-SAMPLES_ROOT = os.path.abspath(os.path.join(TEST_DIR, "..", "..", "..", "samples", "aci"))
-FRAGMENTS_DIR = os.path.abspath(os.path.join(TEST_DIR, "..", "..", "..", "samples", "fragments"))
-POLICIES_DIR = os.path.abspath(os.path.join(TEST_DIR, "..", "..", "..", "samples", "policies"))
+CONFCOM_DIR = os.path.abspath(os.path.join(TEST_DIR, "..", ".."))
+SAMPLES_ROOT = os.path.abspath(os.path.join(TEST_DIR, "..", "..", "data", "samples", "aci"))
+FRAGMENTS_DIR = os.path.abspath(os.path.join(TEST_DIR, "..", "..", "data", "samples", "fragments"))
+POLICIES_DIR = os.path.abspath(os.path.join(TEST_DIR, "..", "..", "data", "samples", "policies"))
 
 
 POLICYGEN_ARGS = {

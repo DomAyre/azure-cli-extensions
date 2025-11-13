@@ -32,7 +32,7 @@ from azure.cli.testsdk import ScenarioTest
 from knack.util import CLIError
 
 TEST_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), ".."))
-SAMPLES_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), "..", '..', '..', '..', 'samples'))
+SAMPLES_DIR = os.path.abspath(os.path.join(os.path.abspath(__file__), "..", '..', '..', 'data', 'samples'))
 
 
 class FragmentMountEnforcement(unittest.TestCase):
