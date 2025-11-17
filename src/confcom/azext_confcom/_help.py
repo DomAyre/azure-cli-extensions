@@ -278,3 +278,41 @@ helps[
         - name: Input a Kubernetes YAML file with a custom containerd socket path
           text: az confcom katapolicygen --yaml "./pod.json" --containerd-pull --containerd-socket-path "/my/custom/containerd.sock"
 """
+
+
+helps[
+    "confcom containers"
+] = """
+    type: group
+    short-summary: Commands which generate Security Policy Container Definitions.
+"""
+
+
+helps[
+    "confcom containers from_aci"
+] = """
+    type: command
+    short-summary: Create a Security Policy Container Definition based on an ACI template.
+
+    parameters:
+        - name: --parameters -p
+          type: string
+          short-summary: 'Input parameters file to optionally accompany a Bicep Template'
+
+        - name: --idx
+          type: int
+          short-summary: 'The index of the container resource in the template to generate the policy for. Default is 0'
+
+
+    examples:
+        - name: Input an ACI Template and generate container definitions
+          text: az confcom containers from_aci arm_template.json
+        - name: Input an ACI Template with a bicepparam file and generate container definitions
+          text: az confcom containers from_aci arm_template.json --parameters parameters.json
+        - name: Input an ACI Template with inline parameter and generate container definitions
+          text: az confcom containers from_aci arm_template.json --parameters image=my.azurecr.io/myimage:tag
+        - name: Input an ACI Template as Bicep
+          text: az confcom containers from_aci my_app.bicep --parameters my_app.bicepparam
+        - name: Input an ACI Template and generate container definitions for the second container resource
+          text: az confcom containers from_aci arm_template.json --idx 1
+"""

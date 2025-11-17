@@ -3,6 +3,10 @@
 Release History
 ===============
 
+1.5.0
+++++++
+* Add containers from_aci command to generate container definitions from an ARM or bicep ACI template.
+
 1.4.0
 ++++++
 * Add --with-containers flag to acipolicygen and acifragmentgen to allow passing container policy definitions directly
