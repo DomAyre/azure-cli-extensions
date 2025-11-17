@@ -4,8 +4,8 @@
 # --------------------------------------------------------------------------------------------
 # pylint: disable=line-too-long
 
-import json
 import argparse
+import json
 import sys
 from knack.arguments import CLIArgumentType
 from azext_confcom._validators import (
@@ -468,4 +468,32 @@ def load_arguments(self, _):
             required=False,
             help="Path to containerd socket if not using the default",
             validator=validate_katapolicygen_input,
+        )
+
+    with self.argument_context("confcom policy containers set layers") as c:
+        c.positional(
+            "policy_file",
+            nargs='?',
+            type=argparse.FileType('rb'),
+            default=sys.stdin.buffer,
+            help="Policy to add the container to",
+        )
+        c.argument(
+            "container_id",
+            options_list=("--id"),
+            help="Container ID to set layers for"
+        )
+        c.argument(
+            "image",
+            options_list=("--image"),
+            default=None,
+            help="Image to get the layers of"
+        )
+        c.argument(
+            "in_place",
+            options_list=("--in-place", "-i"),
+            action="store_true",
+            required=False,
+            default=False,
+            help="Edit the input file in place instead of outputting to stdout"
         )

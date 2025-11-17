@@ -25,6 +25,7 @@ from azext_confcom.template_util import (
     print_existing_policy_from_yaml, print_func, str_to_sha256)
 from azext_confcom.command.fragment_attach import fragment_attach as _fragment_attach
 from azext_confcom.command.fragment_push import fragment_push as _fragment_push
+from azext_confcom.command.policy_containers_set_layers import BinaryIO, policy_containers_set_layers as _policy_containers_set_layers
 from knack.log import get_logger
 from pkg_resources import parse_version
 
@@ -552,3 +553,17 @@ def fragment_push(
         signed_fragment=signed_fragment,
         manifest_tag=manifest_tag
     )
+
+
+def policy_containers_set_layers(
+    policy_file: BinaryIO,
+    container_id: str,
+    image: Optional[str],
+    in_place: bool,
+) -> None:
+    print(_policy_containers_set_layers(
+        policy_file=policy_file,
+        container_id=container_id,
+        image=image,
+        in_place=in_place,
+    ))

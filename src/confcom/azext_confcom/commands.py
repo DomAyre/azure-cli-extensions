@@ -17,3 +17,6 @@ def load_command_table(self, _):
 
     with self.command_group("confcom"):
         pass
+
+    with self.command_group("confcom policy containers set") as g:
+        g.custom_command("layers", "policy_containers_set_layers")
