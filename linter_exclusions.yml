@@ -3516,3 +3516,9 @@ confcom fragment attach:
     signed_fragment:
       rule_exclusions:
         - no_positional_parameters
+
+confcom policy containers set layers:
+  parameters:
+    policy_file:
+      rule_exclusions:
+        - no_positional_parameters
