@@ -25,7 +25,9 @@ from azext_confcom.template_util import (
     print_existing_policy_from_yaml, print_func, str_to_sha256)
 from azext_confcom.command.fragment_attach import fragment_attach as _fragment_attach
 from azext_confcom.command.fragment_push import fragment_push as _fragment_push
-from azext_confcom.command.policy_containers_set_layers import BinaryIO, policy_containers_set_layers as _policy_containers_set_layers
+from azext_confcom.command.policy_containers_set_layers import (
+    policy_containers_set_layers as _policy_containers_set_layers
+)
 from knack.log import get_logger
 from pkg_resources import parse_version
 
