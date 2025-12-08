@@ -7,6 +7,27 @@ from azext_confcom.lib.images import get_image_layers, get_image_config
 from azext_confcom.lib.platform import ACI_MOUNTS
 
 
+def merge_containers(*args) -> dict:
+
+    merged_container = args[0].copy()
+
+    for incoming_container in args[1:]:
+
+        for key, value in incoming_container.items():
+
+            if key in {
+                "env_rules",
+                "exec_processes",
+                "mounts",
+                "signals",
+            }:
+                merged_container[key] += value
+            else:
+                merged_container[key] = value
+
+    return merged_container
+
+
 def from_image(image: str, platform: str) -> str:
 
     mounts = {
