@@ -493,6 +493,23 @@ def load_arguments(self, _):
             help="Platform to create container definition for",
         )
 
+    with self.argument_context("confcom containers merge") as c:
+        c.positional(
+            "dst_container",
+            nargs='?',
+            type=argparse.FileType('rb'),
+            default=sys.stdin.buffer,
+            help="Container definition to be merged into",
+        )
+        c.argument(
+            "src_container",
+            options_list=("-c",),
+            nargs='?',
+            type=argparse.FileType('rb'),
+            required=True,
+            help="Container definition to merge into the destination",
+        )
+
     with self.argument_context("confcom fragment references from_image") as c:
         c.positional(
             "image",

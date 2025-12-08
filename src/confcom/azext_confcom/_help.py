@@ -371,3 +371,19 @@ helps[
         - name: Input an image reference and generate fragment reference
           text: az confcom fragment references from_image my.azurecr.io/myimage:tag
 """
+
+helps[
+    "confcom containers merge"
+] = """
+    type: command
+    short-summary: Merge two Security Policy Container Definitions.
+
+    parameters:
+        - name: -c
+          type: string
+          short-summary: Container to merge into the first container
+
+    examples:
+        - name: Merge two container definitions
+          text: az confcom containers merge container1.inc.rego -c container2.inc.rego
+"""

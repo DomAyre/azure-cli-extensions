@@ -27,6 +27,9 @@ from azext_confcom.command.fragment_push import fragment_push as _fragment_push
 from azext_confcom.command.containers_from_image import (
     containers_from_image as _containers_from_image
 )
+from azext_confcom.command.containers_merge import (
+    containers_merge as _containers_merge
+)
 from azext_confcom.command.fragment_references_from_image import (
     fragment_references_from_image as _fragment_references_from_image
 )
@@ -570,6 +573,16 @@ def containers_from_image(
     _containers_from_image(
         image=image,
         platform=platform,
+    )
+
+
+def containers_merge(
+    dst_container: dict,
+    src_container: dict,
+) -> None:
+    _containers_merge(
+        dst_container,
+        src_container,
     )
 
 
