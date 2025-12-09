@@ -5,23 +5,47 @@
 
 import copy
 import json
-from contextlib import redirect_stdout
-from io import StringIO
-from io import BytesIO
-from pathlib import Path
-
+import re
 import pytest
+
+from contextlib import redirect_stdout
 from deepdiff import DeepDiff
+from io import BytesIO, StringIO
 
 from azext_confcom.command.containers_merge import containers_merge
+from azext_confcom.lib.policy import (
+    Container,
+    ContainerCapabilities,
+    Policy,
+)
+from azext_confcom.lib.serialization import policy_serialize
 
 
-TEST_DIR = Path(__file__).parent
-CONFCOM_DIR = TEST_DIR.parent.parent.parent
-BASE_CONTAINER_PATH = CONFCOM_DIR / "samples" / "images" / "minimal" / "aci_container.inc.rego"
+def build_base_container() -> dict:
+    base_policy = Policy(
+        containers=[
+            Container(
+                capabilities=ContainerCapabilities(
+                    bounding=["CAP_AUDIT_WRITE"],
+                    effective=["CAP_AUDIT_WRITE"],
+                    permitted=["CAP_AUDIT_WRITE"],
+                ),
+                command=["/hello"],
+                id="confcom_test_minimal",
+                layers=["base-layer-sha"],
+                name="confcom_test_minimal",
+            )
+        ]
+    )
 
-with BASE_CONTAINER_PATH.open("r", encoding="utf-8") as handle:
-    BASE_CONTAINER = json.load(handle)
+    policy_rego = policy_serialize(base_policy)
+    containers_match = re.search(r"containers := (\[.*\])\n\nallow_", policy_rego, re.DOTALL)
+    assert containers_match is not None
+    containers_json = containers_match.group(1)
+    return json.loads(containers_json)[0]
+
+
+BASE_CONTAINER = build_base_container()
 
 
 MERGE_TEST_CASES = [
@@ -57,7 +81,7 @@ MERGE_TEST_CASES = [
         },
         {
             "iterable_item_added": {
-                "root['env_rules'][1]": {
+                "root['env_rules'][0]": {
                     "pattern": "FOO=bar",
                     "strategy": "string",
                     "required": True,
@@ -79,7 +103,7 @@ MERGE_TEST_CASES = [
         },
         {
             "iterable_item_added": {
-                "root['mounts'][1]": {
+                "root['mounts'][0]": {
                     "destination": "/data",
                     "options": ["ro"],
                     "source": "sandbox:///tmp/data",
@@ -88,6 +112,111 @@ MERGE_TEST_CASES = [
             }
         },
         id="append-mounts",
+    ),
+    pytest.param(
+        {"allow_elevated": True},
+        {
+            "values_changed": {
+                "root['allow_elevated']": {
+                    "new_value": True,
+                    "old_value": False,
+                }
+            }
+        },
+        id="override-allow-elevated",
+    ),
+    pytest.param(
+        {
+            "capabilities": {
+                "ambient": [],
+                "bounding": [],
+                "effective": [],
+                "inheritable": [],
+                "permitted": [],
+            }
+        },
+        {
+            "iterable_item_removed": {
+                "root['capabilities']['bounding'][0]": "CAP_AUDIT_WRITE",
+                "root['capabilities']['effective'][0]": "CAP_AUDIT_WRITE",
+                "root['capabilities']['permitted'][0]": "CAP_AUDIT_WRITE",
+            }
+        },
+        id="override-capabilities",
+    ),
+    pytest.param(
+        {
+            "exec_processes": [
+                {
+                    "command": ["/healthcheck"],
+                    "signals": ["SIGUSR1"],
+                }
+            ]
+        },
+        {
+            "iterable_item_added": {
+                "root['exec_processes'][0]": {
+                    "command": ["/healthcheck"],
+                    "signals": ["SIGUSR1"],
+                }
+            }
+        },
+        id="append-exec-processes",
+    ),
+    pytest.param(
+        {"signals": ["SIGHUP"]},
+        {
+            "iterable_item_added": {
+                "root['signals'][0]": "SIGHUP",
+            }
+        },
+        id="append-signals",
+    ),
+    pytest.param(
+        {
+            "user": {
+                "group_idnames": [{"pattern": "1234", "strategy": "id", "required": False}],
+                "umask": "0777",
+                "user_idname": {"pattern": "1234", "strategy": "id", "required": False},
+            }
+        },
+        {
+            "values_changed": {
+                "root['user']['group_idnames'][0]['pattern']": {
+                    "new_value": "1234",
+                    "old_value": "",
+                },
+                "root['user']['group_idnames'][0]['strategy']": {
+                    "new_value": "id",
+                    "old_value": "any",
+                },
+                "root['user']['umask']": {
+                    "new_value": "0777",
+                    "old_value": "0022",
+                },
+                "root['user']['user_idname']['pattern']": {
+                    "new_value": "1234",
+                    "old_value": "",
+                },
+                "root['user']['user_idname']['strategy']": {
+                    "new_value": "id",
+                    "old_value": "any",
+                },
+            }
+        },
+        id="override-user",
+    ),
+    pytest.param(
+        {"layers": ["override-layer-sha"]},
+        {
+            "values_changed": {
+                "root['layers'][0]": {
+                    "new_value": "override-layer-sha",
+                    "old_value": "base-layer-sha",
+                }
+            }
+        },
+        id="override-layers",
     ),
     pytest.param(
         {"working_dir": "/workspace"},
@@ -105,7 +234,7 @@ MERGE_TEST_CASES = [
 
 
 @pytest.mark.parametrize("override_container, expected_diff", MERGE_TEST_CASES)
-def test_containers_merge_parametrized(override_container: dict, expected_diff: dict):
+def test_containers_merge(override_container: dict, expected_diff: dict):
     base_container = copy.deepcopy(BASE_CONTAINER)
     base_buffer = BytesIO(json.dumps(base_container).encode("utf-8"))
     override_buffer = BytesIO(json.dumps(override_container).encode("utf-8"))
