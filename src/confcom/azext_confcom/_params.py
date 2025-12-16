@@ -4,7 +4,9 @@
 # --------------------------------------------------------------------------------------------
 # pylint: disable=line-too-long
 
+import argparse
 import json
+import sys
 from knack.arguments import CLIArgumentType
 from azext_confcom._validators import (
     validate_params_file,
@@ -43,6 +45,32 @@ def load_arguments(self, _):
     with self.argument_context("confcom") as c:
         c.argument("tags", tags_type)
         c.argument("confcom_name", confcom_name_type, options_list=["--name", "-n"])
+
+    with self.argument_context("confcom fragment attach") as c:
+        c.positional(
+            "signed_fragment",
+            nargs='?',
+            type=argparse.FileType('rb'),
+            default=sys.stdin.buffer,
+            help="Signed fragment to attach",
+        )
+        c.argument(
+            "manifest_tag",
+            help="Manifest tag for the fragment",
+        )
+
+    with self.argument_context("confcom fragment push") as c:
+        c.positional(
+            "signed_fragment",
+            nargs='?',
+            type=argparse.FileType('rb'),
+            default=sys.stdin.buffer,
+            help="Signed fragment to push",
+        )
+        c.argument(
+            "manifest_tag",
+            help="Manifest tag for the fragment",
+        )
 
     with self.argument_context("confcom acipolicygen") as c:
         c.argument(
@@ -362,6 +390,13 @@ def load_arguments(self, _):
             type=json.loads,
             help='Container definitions to include in the policy'
         )
+        c.argument(
+            "out_signed_fragment",
+            action="store_true",
+            default=False,
+            required=False,
+            help="Emit only the signed fragment bytes",
+        )
 
     with self.argument_context("confcom katapolicygen") as c:
         c.argument(
@@ -433,4 +468,32 @@ def load_arguments(self, _):
             required=False,
             help="Path to containerd socket if not using the default",
             validator=validate_katapolicygen_input,
+        )
+
+    with self.argument_context("confcom policy containers set layers") as c:
+        c.positional(
+            "policy_file",
+            nargs='?',
+            type=argparse.FileType('rb'),
+            default=sys.stdin.buffer,
+            help="Policy to add the container to",
+        )
+        c.argument(
+            "container_id",
+            options_list=("--id"),
+            help="Container ID to set layers for"
+        )
+        c.argument(
+            "image",
+            options_list=("--image"),
+            default=None,
+            help="Image to get the layers of"
+        )
+        c.argument(
+            "in_place",
+            options_list=("--in-place", "-i"),
+            action="store_true",
+            required=False,
+            default=False,
+            help="Edit the input file in place instead of outputting to stdout"
         )

@@ -278,3 +278,97 @@ helps[
         - name: Input a Kubernetes YAML file with a custom containerd socket path
           text: az confcom katapolicygen --yaml "./pod.json" --containerd-pull --containerd-socket-path "/my/custom/containerd.sock"
 """
+
+helps[
+    "confcom fragment"
+] = """
+    type: group
+    short-summary: Commands to handle Confidential Container Policy Fragments.
+"""
+
+helps[
+    "confcom fragment push"
+] = """
+    type: command
+    short-summary: Push a Confidential Container Policy Fragment to an ORAS registry
+
+    parameters:
+      - name: --manifest-tag
+        type: string
+        short-summary: 'The reference to push the signed fragment to'
+
+    examples:
+        - name: Push a signed fragment to a registry
+          text: az confcom fragment push ./fragment.reg.cose --manifest-tag myregistry.azurecr.io/fragment:latest
+        - name: Push the output of acifragmentgen to a registry
+          text: az confcom acifragmentgen --chain my.cert.pem --key my_key.pem --svn "1" --namespace contoso --feed "test-feed" --input ./fragment_spec.json | az confcom fragment push --manifest-tag myregistry.azurecr.io/fragment:latest
+"""
+
+helps[
+    "confcom fragment attach"
+] = """
+    type: command
+    short-summary: Attach a Confidential Container Policy Fragment to an image in an ORAS registry.
+
+    parameters:
+      - name: --manifest-tag
+        type: string
+        short-summary: 'The reference to attach the signed fragment to'
+
+    examples:
+        - name: Attach a signed fragment to a registry
+          text: az confcom fragment attach ./fragment.reg.cose --manifest-tag myregistry.azurecr.io/image:latest
+        - name: Attach the output of acifragmentgen to a registry
+          text: az confcom acifragmentgen --chain my.cert.pem --key my_key.pem --svn "1" --namespace contoso --feed "test-feed" --input ./fragment_spec.json | az confcom fragment attach --manifest-tag myregistry.azurecr.io/image:latest
+"""
+
+helps[
+    "confcom policy"
+] = """
+    type: group
+    short-summary: Commands which operate on Security Policies.
+"""
+
+
+helps[
+    "confcom policy containers"
+] = """
+    type: group
+    short-summary: Commands which operate on the container definitions in Security Policies.
+"""
+
+
+helps[
+    "confcom policy containers set"
+] = """
+    type: group
+    short-summary: Commands which set fields on the container definitions in Security Policies.
+"""
+
+
+helps[
+    "confcom policy containers set layers"
+] = """
+    type: command
+    short-summary: Set the layers field of the specified container in a Security Policy.
+
+    parameters:
+        - name: --id
+          type: string
+          short-summary: 'The ID of the container definition to set the layers for'
+
+        - name: --image
+          type: string
+          short-summary: 'The image reference to derive the new layers from'
+
+        - name: --in-place -i
+          type: boolean
+          short-summary: 'When enabled, edit the policy in place, otherwise print the modified policy to stdout'
+
+
+    examples:
+        - name: Set the layers field of a container in a Security Policy
+          text: az confcom policy containers set layers --id my-container --image my-image:latest
+        - name: Set the layers field of a container in a Security Policy in place
+          text: az confcom policy containers set layers --id my-container --image my-image:latest -i
+"""
