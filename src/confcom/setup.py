@@ -8,7 +8,6 @@
 
 from codecs import open
 from setuptools import setup, find_packages
-from azext_confcom.lib.opa import opa_get
 from azext_confcom.rootfs_proxy import SecurityPolicyProxy
 from azext_confcom.kata_proxy import KataPolicyGenProxy
 from azext_confcom.cose_proxy import CoseSignToolProxy
@@ -49,7 +48,6 @@ DEPENDENCIES = [
 SecurityPolicyProxy.download_binaries()
 KataPolicyGenProxy.download_binaries()
 CoseSignToolProxy.download_binaries()
-opa_get()
 
 with open("README.md", "r", encoding="utf-8") as f:
     README = f.read()
